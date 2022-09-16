@@ -41,6 +41,8 @@ public class SceneManager : ModuleRules
 				"Slate",
 				"SlateCore",
 				"PhysicsCore",
+				"JsonUtilities",
+				"JSON",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
