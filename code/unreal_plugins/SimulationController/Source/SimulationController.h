@@ -3,6 +3,7 @@
 #include <atomic>
 #include <future>
 #include <memory>
+#include <string>
 
 #include <CoreMinimal.h>
 #include <Modules/ModuleManager.h>
@@ -52,15 +53,20 @@ private:
     std::unique_ptr<Visualizer> visualizer_ = nullptr;
 
     bool is_world_begin_play_executed_ = false;
+    bool is_rpc_server_launched_ = false;
+    bool is_valid_level_open_once_ = false;
 
     // thread sychronization elements
     std::atomic<FrameState> frame_state_;
 
     // used so tick() can wait until end_frame() has started executing before returning, reinitialized in begin_tick()
-    std::promise<void> end_frame_started_executing_promise_;
-    std::future<void> end_frame_started_executing_future_;
+    std::promise<void> end_frame_started_executing_promise_ = std::promise<void>();
+    std::future<void> end_frame_started_executing_future_ = end_frame_started_executing_promise_.get_future();
 
     // used so end_tick() can wait until end_frame() has finished executing before returning, reinitialized in begin_tick()
-    std::promise<void> end_frame_finished_executing_promise_;
-    std::future<void> end_frame_finished_executing_future_;
+    std::promise<void> end_frame_finished_executing_promise_ = std::promise<void>();
+    std::future<void> end_frame_finished_executing_future_ = end_frame_finished_executing_promise_.get_future();
+
+    std::promise<void> new_level_loaded_promise_ = std::promise<void>();
+    std::future<void> new_level_loaded_future_ = new_level_loaded_promise_.get_future();
 };

@@ -30,6 +30,7 @@
 #include "Task.h"
 #include "Visualizer.h"
 
+#include <chrono>   // remove this line before PR
 
 // Different possible frame states for thread synchronization
 enum class FrameState : uint8_t
@@ -45,6 +46,8 @@ enum class FrameState : uint8_t
 void SimulationController::StartupModule()
 {
     ASSERT(FModuleManager::Get().IsModuleLoaded(TEXT("CoreUtils")));
+
+    std::this_thread::sleep_for(std::chrono::seconds(20));  // remove this line before PR
 
     post_world_initialization_delegate_handle_ = FWorldDelegates::OnPostWorldInitialization.AddRaw(this, &SimulationController::postWorldInitializationEventHandler);
 
@@ -69,7 +72,7 @@ void SimulationController::ShutdownModule()
 
     FWorldDelegates::OnWorldCleanup.Remove(world_cleanup_delegate_handle_);
     world_cleanup_delegate_handle_.Reset();
-    
+
     FWorldDelegates::OnPostWorldInitialization.Remove(post_world_initialization_delegate_handle_);
     post_world_initialization_delegate_handle_.Reset();
 }
@@ -78,14 +81,15 @@ void SimulationController::postWorldInitializationEventHandler(UWorld* world, co
 {
     ASSERT(world);
 
-    if (world->IsGameWorld() && GEngine->GetWorldContextFromWorld(world) != nullptr) {
-        
-        const auto level_name = Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PATH" }) + "/" + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_ID" });
-        const auto world_path_name =  level_name + "." + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_ID" });
+    if (world->IsGameWorld() && GEngine->GetWorldContextFromWorld(world)) {
 
-        // if the current world is not the desired one, launch the desired one using OpenLevel functionality
-        if (TCHAR_TO_UTF8(*(world->GetPathName())) != world_path_name) {
+        const auto level_name = Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PATH" }) + "/" + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_ID" });
+        const auto world_path_name = level_name + "." + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_ID" });
+
+        // if this is the first valid level being open and the current world is not the desired one, launch the desired one using OpenLevel functionality
+        if (!is_valid_level_open_once_ && TCHAR_TO_UTF8(*(world->GetPathName())) != world_path_name) {
             UGameplayStatics::OpenLevel(world, level_name.c_str());
+            is_valid_level_open_once_ = true;
         } else {
             // We do not support multiple concurrent game worlds. We expect worldCleanupEventHandler(...) to be called before a new world is created.
             ASSERT(!world_);
@@ -154,18 +158,23 @@ void SimulationController::worldBeginPlayEventHandler()
     // initialize frame state used for thread synchronization
     frame_state_ = FrameState::Idle;
 
-    // config values required for rpc communication
-    const auto hostname = Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "IP" });
-    const auto port = Config::getValue<int>({ "SIMULATION_CONTROLLER", "PORT" });
+    if (!is_rpc_server_launched_) {
+        // config values required for rpc communication
+        const auto hostname = Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "IP" });
+        const auto port = Config::getValue<int>({ "SIMULATION_CONTROLLER", "PORT" });
 
-    rpc_server_ = std::make_unique<RpcServer>(hostname, port);
-    ASSERT(rpc_server_);
+        rpc_server_ = std::make_unique<RpcServer>(hostname, port);
+        ASSERT(rpc_server_);
+        bindFunctionsToRpcServer();
 
-    bindFunctionsToRpcServer();
+        is_rpc_server_launched_ = true;
 
-    rpc_server_->launchWorkerThreads(1u);
+        rpc_server_->launchWorkerThreads(1u);
+    }
 
     is_world_begin_play_executed_ = true;
+
+    new_level_loaded_promise_.set_value();  // set this to unblock resetLevel() function
 }
 
 void SimulationController::worldCleanupEventHandler(UWorld* world, bool session_ended, bool cleanup_resources)
@@ -177,13 +186,15 @@ void SimulationController::worldCleanupEventHandler(UWorld* world, bool session_
 
         // worldCleanupEventHandler(...) is called for all worlds, but some local state (such as rpc_server_ and agent_controller_) is initialized only when worldBeginPlayEventHandler(...) is called for a particular world.
         // So we check if worldBeginPlayEventHandler(...) has been executed.
-        if(is_world_begin_play_executed_) {
+        if (is_world_begin_play_executed_) {
 
             is_world_begin_play_executed_ = false;
 
             ASSERT(rpc_server_);
-            rpc_server_->stop(); // stop the RPC server as we will no longer service client requests
-            rpc_server_ = nullptr;
+            if (IsEngineExitRequested()) {
+                rpc_server_->stop();    // stop the RPC server as we will no longer service client requests
+                rpc_server_ = nullptr;
+            }
 
             ASSERT(visualizer_);
             visualizer_->cleanUpObjectReferences();
@@ -332,6 +343,14 @@ void SimulationController::bindFunctionsToRpcServer()
         return task_->getStepInfoSpace();
     });
 
+    rpc_server_->bindAsync("resetLevel", [this](const std::string level_id) -> void {
+        const auto level_name = Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PATH" }) + "/" + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + level_id;
+        UGameplayStatics::OpenLevel(world_, level_name.c_str());
+        new_level_loaded_promise_ = std::promise<void>();
+        new_level_loaded_future_ = new_level_loaded_promise_.get_future();
+        new_level_loaded_future_.wait();
+    });
+
     rpc_server_->bindSync("applyAction", [this](std::map<std::string, std::vector<float>> action) -> void {
         ASSERT(frame_state_ == FrameState::ExecutingPreTick);
         ASSERT(agent_controller_);
@@ -380,13 +399,13 @@ void SimulationController::bindFunctionsToRpcServer()
         task_->reset();
     });
 
-    rpc_server_->bindSync("isAgentControllerReady", [this]() -> bool{
+    rpc_server_->bindSync("isAgentControllerReady", [this]() -> bool {
         ASSERT(frame_state_ == FrameState::ExecutingPostTick);
         ASSERT(agent_controller_);
         return agent_controller_->isReady();
     });
 
-    rpc_server_->bindSync("isTaskReady", [this]() -> bool{
+    rpc_server_->bindSync("isTaskReady", [this]() -> bool {
         ASSERT(frame_state_ == FrameState::ExecutingPostTick);
         ASSERT(task_);
         return task_->isReady();

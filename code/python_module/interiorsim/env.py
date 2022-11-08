@@ -81,10 +81,12 @@ class Env(gym.Env):
 
         return obs, reward, is_done, step_info
 
-    def reset(self):
+    def reset(self, level_id=None):
 
         ready = False
         once = False
+
+        self._resetLevel(level_id)
 
         while not ready:
             self._begin_tick()
@@ -420,6 +422,13 @@ class Env(gym.Env):
         # reset the Task first in case it needs to set the position of Actors, then reset AgentController so it can refine the position of actors
         self._client.call("resetTask")
         self._client.call("resetAgentController")
+
+    def _resetLevel(self, level_id):
+        if level_id:
+            self._client.call("resetLevel", level_id)
+            self._begin_tick()
+            self._tick()
+            self._end_tick()
 
     def _is_ready(self):
         return self._client.call("isTaskReady") and self._client.call("isAgentControllerReady")
