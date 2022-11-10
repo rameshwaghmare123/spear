@@ -47,7 +47,7 @@ void SimulationController::StartupModule()
 {
     ASSERT(FModuleManager::Get().IsModuleLoaded(TEXT("CoreUtils")));
 
-    std::this_thread::sleep_for(std::chrono::seconds(20));  // remove this line before PR
+    std::this_thread::sleep_for(std::chrono::seconds(10));  // remove this line before PR
 
     post_world_initialization_delegate_handle_ = FWorldDelegates::OnPostWorldInitialization.AddRaw(this, &SimulationController::postWorldInitializationEventHandler);
 
@@ -81,7 +81,7 @@ void SimulationController::postWorldInitializationEventHandler(UWorld* world, co
 {
     ASSERT(world);
 
-    if (world->IsGameWorld() && GEngine->GetWorldContextFromWorld(world)) {
+    if (world->IsGameWorld() && GEngine->GetWorldContextFromWorld(world)) { // && world->GetName().Compare(TEXT("Entry"), ESearchCase::CaseSensitive) != 0) {
 
         const auto level_name = Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PATH" }) + "/" + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_ID" });
         const auto world_path_name = level_name + "." + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_ID" });
@@ -90,7 +90,7 @@ void SimulationController::postWorldInitializationEventHandler(UWorld* world, co
         if (!is_valid_level_open_once_ && TCHAR_TO_UTF8(*(world->GetPathName())) != world_path_name) {
             UGameplayStatics::OpenLevel(world, level_name.c_str());
             is_valid_level_open_once_ = true;
-        } else {
+        } else if (world->GetName().Compare(TEXT("Entry"), ESearchCase::CaseSensitive) != 0) {
             // We do not support multiple concurrent game worlds. We expect worldCleanupEventHandler(...) to be called before a new world is created.
             ASSERT(!world_);
 
@@ -125,11 +125,14 @@ void SimulationController::worldBeginPlayEventHandler()
     // create AgentController
     if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "AGENT_CONTROLLER_NAME" }) == "CameraAgentController") {
         agent_controller_ = std::make_unique<CameraAgentController>(world_);
-    } else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "AGENT_CONTROLLER_NAME" }) == "OpenBotAgentController") {
+    }
+    else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "AGENT_CONTROLLER_NAME" }) == "OpenBotAgentController") {
         agent_controller_ = std::make_unique<OpenBotAgentController>(world_);
-    } else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "AGENT_CONTROLLER_NAME" }) == "SphereAgentController") {
+    }
+    else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "AGENT_CONTROLLER_NAME" }) == "SphereAgentController") {
         agent_controller_ = std::make_unique<SphereAgentController>(world_);
-    } else {
+    }
+    else {
         ASSERT(false);
     }
     ASSERT(agent_controller_);
@@ -137,11 +140,14 @@ void SimulationController::worldBeginPlayEventHandler()
     // create Task
     if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "TASK_NAME" }) == "ImitationLearningTask") {
         task_ = std::make_unique<ImitationLearningTask>(world_);
-    } else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "TASK_NAME" }) == "NullTask") {
+    }
+    else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "TASK_NAME" }) == "NullTask") {
         task_ = std::make_unique<NullTask>();
-    } else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "TASK_NAME" }) == "PointGoalNavigationTask") {
+    }
+    else if (Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "TASK_NAME" }) == "PointGoalNavigationTask") {
         task_ = std::make_unique<PointGoalNavTask>(world_);
-    } else {
+    }
+    else {
         ASSERT(false);
     }
     ASSERT(task_);
@@ -165,16 +171,18 @@ void SimulationController::worldBeginPlayEventHandler()
 
         rpc_server_ = std::make_unique<RpcServer>(hostname, port);
         ASSERT(rpc_server_);
+
         bindFunctionsToRpcServer();
 
-        is_rpc_server_launched_ = true;
-
         rpc_server_->launchWorkerThreads(1u);
+
+        is_rpc_server_launched_ = true;
     }
 
     is_world_begin_play_executed_ = true;
 
-    new_level_loaded_promise_.set_value();  // set this to unblock resetLevel() function
+    // when we have to load multile levels sequentially, this unblocks resetLevel() function
+    new_level_loaded_promise_.set_value();
 }
 
 void SimulationController::worldCleanupEventHandler(UWorld* world, bool session_ended, bool cleanup_resources)
@@ -190,8 +198,8 @@ void SimulationController::worldCleanupEventHandler(UWorld* world, bool session_
 
             is_world_begin_play_executed_ = false;
 
-            ASSERT(rpc_server_);
             if (IsEngineExitRequested()) {
+                ASSERT(rpc_server_);
                 rpc_server_->stop();    // stop the RPC server as we will no longer service client requests
                 rpc_server_ = nullptr;
             }
@@ -220,28 +228,43 @@ void SimulationController::worldCleanupEventHandler(UWorld* world, bool session_
 
 void SimulationController::beginFrameEventHandler()
 {
+    std::cout << "beginFrameEventHandler(): beginning..." << std::endl;
+
     // If beginTick(...) has indicated (via RequestPreTick framestate) that we should execute a frame of work
     if (frame_state_ == FrameState::RequestPreTick) {
+
+        std::cout << "beginFrameEventHandler(): requested preTick..." << std::endl;
 
         // update local state
         frame_state_ = FrameState::ExecutingPreTick;
 
+        std::cout << "beginFrameEventHandler(): unpausing game..." << std::endl;
+
         // unpause the game
         UGameplayStatics::SetGamePaused(world_, false);
+
+        std::cout << "beginFrameEventHandler(): unpaused game, waiting for tick()..." << std::endl;
 
         // execute all pre-tick sync work, wait here for tick(...) to reset work guard
         rpc_server_->runSync();
 
+        std::cout << "beginFrameEventHandler(): received tick()..." << std::endl;
+
         // execute pre-tick work inside the task
-        task_->beginFrame();
+        if (is_world_begin_play_executed_) {
+            task_->beginFrame();
+        }
 
         // update local state
         frame_state_ = FrameState::ExecutingTick;
     }
+    std::cout << "beginFrameEventHandler(): ending..." << std::endl;
 }
 
 void SimulationController::endFrameEventHandler()
 {
+    std::cout << "endFrameEventHandler(): beginning..." << std::endl;
+
     // if beginFrameEventHandler(...) has indicated that we are currently executing a frame of work
     if (frame_state_ == FrameState::ExecutingTick) {
 
@@ -249,16 +272,24 @@ void SimulationController::endFrameEventHandler()
         frame_state_ = FrameState::ExecutingPostTick;
 
         // execute post-tick work inside the task
-        task_->endFrame();
+        if (is_world_begin_play_executed_) {
+            task_->endFrame();
+        }
 
         // allow tick() to finish executing
         end_frame_started_executing_promise_.set_value();
 
+        std::cout << "endFrameEventHandler(): waiting for endtick() to reset work guard..." << std::endl;
+
         // execute all post-tick sync work, wait here for endTick() to reset work guard
         rpc_server_->runSync();
 
+        std::cout << "endFrameEventHandler(): endtick() resetted work guard, now pausing game..." << std::endl;
+
         // pause the game
         UGameplayStatics::SetGamePaused(world_, true);
+
+        std::cout << "endFrameEventHandler(): game is paused..." << std::endl;
 
         // update local state
         frame_state_ = FrameState::Idle;
@@ -266,6 +297,8 @@ void SimulationController::endFrameEventHandler()
         // allow endTick(...) to finish executing
         end_frame_finished_executing_promise_.set_value();
     }
+
+    std::cout << "endFrameEventHandler(): ending..." << std::endl;
 }
 
 void SimulationController::bindFunctionsToRpcServer()
@@ -273,6 +306,12 @@ void SimulationController::bindFunctionsToRpcServer()
     rpc_server_->bindAsync("ping", []() -> std::string {
         return "SimulationController received a call to ping()...";
     });
+
+    //rpc_server_->bindAsync("waitForEntryLevelToLoad", [this]() -> void {
+    //    std::cout << "Waiting for entry_level_to_be_loaded..." << std::endl;
+    //    entry_level_loaded_future_.wait();
+    //    std::cout << "entry_level loaded..." << std::endl;
+    //});
 
     rpc_server_->bindAsync("close", []() -> void {
         constexpr auto immediate_shutdown = false;
@@ -285,6 +324,9 @@ void SimulationController::bindFunctionsToRpcServer()
     });
 
     rpc_server_->bindAsync("beginTick", [this]() -> void {
+
+        std::cout << "beginTick(): beginning..." << std::endl;
+
         ASSERT(frame_state_ == FrameState::Idle);
 
         // reinitialize end_frame_started_executing promise and future
@@ -297,30 +339,54 @@ void SimulationController::bindFunctionsToRpcServer()
 
         // indicate that we want the game thread to execute one frame of work
         frame_state_ = FrameState::RequestPreTick;
+
+        std::cout << "beginTick(): ending..." << std::endl;
     });
 
     rpc_server_->bindAsync("tick", [this]() -> void {
+
+        std::cout << "tick(): beginning..." << std::endl;
+
         ASSERT((frame_state_ == FrameState::ExecutingPreTick) || (frame_state_ == FrameState::RequestPreTick));
+
+        std::cout << "tick(): unblocking beginframe..." << std::endl;
 
         // indicate that we want the game thread to stop blocking in beginFrame()
         rpc_server_->unblockRunSyncWhenFinishedExecuting();
 
+        std::cout << "tick(): waiting for endFrame to start executing..." << std::endl;
+
         // wait here until the game thread has started executing endFrame()
         end_frame_started_executing_future_.wait();
 
+        std::cout << "tick(): endFrame has started executing..." << std::endl;
+
         ASSERT(frame_state_ == FrameState::ExecutingPostTick);
+
+        std::cout << "tick(): ending..." << std::endl;
     });
 
     rpc_server_->bindAsync("endTick", [this]() -> void {
+
+        std::cout << "endTick(): beginning..." << std::endl;
+
         ASSERT(frame_state_ == FrameState::ExecutingPostTick);
+
+        std::cout << "endTick(): unblocking endFrame()..." << std::endl;
 
         // indicate that we want the game thread to stop blocking in endFrame()
         rpc_server_->unblockRunSyncWhenFinishedExecuting();
 
+        std::cout << "endTick(): endFrame() unblocked, waiting for endFrme() to finish..." << std::endl;
+
         // wait here until the game thread has finished executing endFrame()
         end_frame_finished_executing_future_.wait();
 
+        std::cout << "endTick(): endFrme() finished..." << std::endl;
+
         ASSERT(frame_state_ == FrameState::Idle);
+
+        std::cout << "endTick(): ending..." << std::endl;
     });
 
     rpc_server_->bindAsync("getActionSpace", [this]() -> std::map<std::string, Box> {
@@ -346,6 +412,8 @@ void SimulationController::bindFunctionsToRpcServer()
     rpc_server_->bindAsync("resetLevel", [this](const std::string level_id) -> void {
         const auto level_name = Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PATH" }) + "/" + Config::getValue<std::string>({ "SIMULATION_CONTROLLER", "LEVEL_PREFIX" }) + level_id;
         UGameplayStatics::OpenLevel(world_, level_name.c_str());
+        
+        // every time resetLevel is called, wait till new level loads successfully before returning to client
         new_level_loaded_promise_ = std::promise<void>();
         new_level_loaded_future_ = new_level_loaded_promise_.get_future();
         new_level_loaded_future_.wait();

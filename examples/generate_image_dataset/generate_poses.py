@@ -37,27 +37,22 @@ if __name__ == "__main__":
 
     # get list of scenes from pak_dir
     scenes = os.listdir(args.paks_dir)
+    
+    # change config based on current scene
+    config.defrost()
+    config.SIMULATION_CONTROLLER.LEVEL_ID = scenes[0]
+    config.freeze()
+    env = Env(config)
 
     # iterate through all scenes
-    for idx, scene in enumerate(scenes):
+    for idx, scene in enumerate(scenes[1:]):
 
         print(f"processing scene {scene}")
 
-        # change config based on current scene
-        config.defrost()
-        config.SIMULATION_CONTROLLER.LEVEL_ID = scene
-        config.freeze()
-
-        # copy pak to the executable dir as this is required for launching the appropriate pak file
-        assert os.path.exists(f"{args.executable_content_dir}/Paks")
-        if not os.path.exists(f"{args.executable_content_dir}/Paks/{scene}_{PLATFORM}.pak"):
-            shutil.copy(os.path.join(args.paks_dir, f"{scene}/paks/{PLATFORM}/{scene}/{scene}_{PLATFORM}.pak"), f"{args.executable_content_dir}/Paks")
-
-        # create Env object
-        env = Env(config)
-
-        # reset the simulation
-        _ = env.reset()
+        if idx == 0:
+            env.reset()
+        else:        
+            env.reset(scene)
 
         # get random positions based on number of poses requested
         _, _, _, step_info = env.step({"set_pose": np.array([0,0,0,0,0,0], dtype=np.float32), "set_num_random_points": np.array([args.num_poses_per_scene], dtype=np.uint32)})
@@ -77,10 +72,6 @@ if __name__ == "__main__":
                            "yaw_degs"  : random_yaw_values,
                            "roll_degs" : random_roll_values})
         df.to_csv(args.poses_file, mode='a', index=False, header=idx==0)
-
-        # close the current scene
-        env.close()
-        
-        # remove copied pak file from exectuable dir's Content folder as it is no longer required
-        os.remove(f"{args.executable_content_dir}/Paks/{scene}_{PLATFORM}.pak")
     
+    # close the current scene
+    env.close()

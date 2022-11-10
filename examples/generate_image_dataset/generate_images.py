@@ -78,31 +78,28 @@ if __name__ == "__main__":
     df = pd.read_csv(args.poses_file)
 
     # iterate over all scenes in poses_file
-    for scene in df["map_id"].unique():
+    for idx, scene in enumerate(df["map_id"].unique()):
 
         print(f"processing scene {scene}")
-
-        # change config based on current scene
-        config.defrost()
-        # scene type is a numpy int, yaml config doesn't recognise it, so we need to explicitly cast it, otherwise we get an Invalid type error
-        config.SIMULATION_CONTROLLER.LEVEL_ID = str(scene)
-        config.freeze()
-
-        # copy pak to the executable dir as this is required for launching the appropriate pak file
-        assert os.path.exists(f"{args.executable_content_dir}/Paks")
-        if not os.path.exists(f"{args.executable_content_dir}/Paks/{scene}_{PLATFORM}.pak"):
-            shutil.copy(os.path.join(args.paks_dir, f"{scene}/paks/{PLATFORM}/{scene}/{scene}_{PLATFORM}.pak"), f"{args.executable_content_dir}/Paks")
 
         # create dir for storing images
         for render_pass in config.SIMULATION_CONTROLLER.CAMERA_AGENT_CONTROLLER.RENDER_PASSES:
             if not os.path.exists(os.path.join(args.output_dir, f"{scene}/{render_pass}")):
                 os.makedirs(os.path.join(args.output_dir, f"{scene}/{render_pass}"))
 
-        # create Env object
-        env = CustomEnv(config, num_internal_steps=1)
-
-        # reset the simulation
-        _ = env.reset()
+        if idx == 0:
+            # change config based on current scene
+            config.defrost()
+            # scene type is a numpy int, yaml config doesn't recognise it, so we need to explicitly cast it, otherwise we get an Invalid type error
+            config.SIMULATION_CONTROLLER.LEVEL_ID = str(scene)
+            config.freeze()
+            
+            # create Env object
+            env = CustomEnv(config, num_internal_steps=1)
+            _ = env.reset()
+        else:
+            # reset the simulation with a new map
+            _ = env.reset(str(scene))
 
         # iterate over all poses for this scene once before getting observations to warm-up the Unreal Engine rendering system
         for pose in df.loc[df["map_id"] == scene].to_records():
@@ -126,9 +123,6 @@ if __name__ == "__main__":
 
         #cv2.destroyAllWindows()
 
-        # close the current scene
-        env.close()
-
-        # remove copied pak file from exectuable dir's Content folder as it is no longer required
-        os.remove(f"{args.executable_content_dir}/Paks/{scene}_{PLATFORM}.pak")
+    # close the current scene
+    env.close()
     

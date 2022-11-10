@@ -60,14 +60,14 @@ class Env(gym.Env):
         self._request_launch_unreal_instance()
         self._connect_to_unreal_instance()
         self._initialize_unreal_instance()
-
+        
         self.action_space = self._get_action_space()
         self.observation_space = self._get_observation_space()
 
         self._byte_order = self._get_byte_order()
         self._task_step_info_space = self._get_task_step_info_space()
         self._agent_controller_step_info_space = self._get_agent_controller_step_info_space()
-
+        
     def step(self, action):
         
         self._begin_tick()
@@ -180,7 +180,7 @@ class Env(gym.Env):
         # On Windows, we need to pass in extra command-line parameters so that calls to UE_Log and writes to std::cout are visible on the command-line.
         if sys.platform == "win32":
             launch_params.append("-stdout")
-            launch_params.append("-FullStdOutLogOutput")
+            # launch_params.append("-FullStdOutLogOutput")
 
         # Provides additional control over which Vulkan devices are recognized by Unreal
         if len(self._config.INTERIORSIM.VULKAN_DEVICE_FILES) > 0:
@@ -293,6 +293,9 @@ class Env(gym.Env):
             assert False
 
     def _initialize_unreal_instance(self):
+
+        # self._wait_for_entry_level_to_load()
+
         # do one tick cyle here to prep Unreal Engine so that we can receive valid observations
         self._begin_tick()
         self._tick()
@@ -359,6 +362,9 @@ class Env(gym.Env):
 
     def _close_unreal_instance(self):
         self._client.call("close")
+
+    def _wait_for_entry_level_to_load(self):
+        self._client.call("waitForEntryLevelToLoad")
 
     def _begin_tick(self):
         self._client.call("beginTick")

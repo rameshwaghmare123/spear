@@ -53,8 +53,8 @@ private:
     std::unique_ptr<Visualizer> visualizer_ = nullptr;
 
     bool is_world_begin_play_executed_ = false;
-    bool is_rpc_server_launched_ = false;
     bool is_valid_level_open_once_ = false;
+    bool is_rpc_server_launched_ = false;
 
     // thread sychronization elements
     std::atomic<FrameState> frame_state_;
