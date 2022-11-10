@@ -1,10 +1,11 @@
 INTERIORSIM:
   LAUNCH_MODE: "standalone_executable"
-  # STANDALONE_EXECUTABLE: "C:/github/spear/code/unreal_projects/RobotProject/Standalone-Shipping/WindowsNoEditor/RobotProject.exe"
-  STANDALONE_EXECUTABLE: "C:/github/spear/code/unreal_projects/RobotProject/Standalone-Shipping/WindowsNoEditor/RobotProject/Binaries/Win64/RobotProject-Win64-Shipping-Cmd.exe"
+  STANDALONE_EXECUTABLE: "C:/github/spear/code/unreal_projects/RobotProject/Standalone-Development/WindowsNoEditor/RobotProject/Binaries/Win64/RobotProject-Cmd.exe"
+  # STANDALONE_EXECUTABLE: "C:/github/spear/code/unreal_projects/RobotProject/Standalone-Shipping/WindowsNoEditor/RobotProject/Binaries/Win64/RobotProject-Win64-Shipping-Cmd.exe"
   TEMP_DIR: "C:/github/spear/code/unreal_projects/RobotProject/Temp"
   CUSTOM_COMMAND_LINE_ARGUMENTS: [ "-dx12"]
   RENDER_OFFSCREEN: True
+  RPC_CLIENT_INTERNAL_TIMEOUT_SECONDS: 30.0
 
 SIMULATION_CONTROLLER:
   TASK_NAME: "NullTask"
