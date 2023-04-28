@@ -40,14 +40,7 @@
 #include "SimulationController/Visualizer.h"
 
 // Different possible frame states for thread synchronization
-enum class FrameState
-{
-    Idle,
-    RequestPreTick,
-    ExecutingPreTick,
-    ExecutingTick,
-    ExecutingPostTick
-};
+enum class FrameState { Idle, RequestPreTick, ExecutingPreTick, ExecutingTick, ExecutingPostTick };
 
 void SimulationController::StartupModule()
 {
@@ -63,13 +56,10 @@ void SimulationController::StartupModule()
 
     post_world_initialization_delegate_handle_ =
         FWorldDelegates::OnPostWorldInitialization.AddRaw(this, &SimulationController::postWorldInitializationEventHandler);
-    world_cleanup_delegate_handle_ =
-        FWorldDelegates::OnWorldCleanup.AddRaw(this, &SimulationController::worldCleanupEventHandler);
+    world_cleanup_delegate_handle_ = FWorldDelegates::OnWorldCleanup.AddRaw(this, &SimulationController::worldCleanupEventHandler);
 
-    begin_frame_delegate_handle_ =
-        FCoreDelegates::OnBeginFrame.AddRaw(this, &SimulationController::beginFrameEventHandler);
-    end_frame_delegate_handle_ =
-        FCoreDelegates::OnEndFrame.AddRaw(this, &SimulationController::endFrameEventHandler);
+    begin_frame_delegate_handle_ = FCoreDelegates::OnBeginFrame.AddRaw(this, &SimulationController::beginFrameEventHandler);
+    end_frame_delegate_handle_   = FCoreDelegates::OnEndFrame.AddRaw(this, &SimulationController::endFrameEventHandler);
 }
 
 void SimulationController::ShutdownModule()
@@ -103,11 +93,11 @@ void SimulationController::postWorldInitializationEventHandler(UWorld* world, co
 
     ASSERT(world);
 
-    #if WITH_EDITOR
-        bool ready_to_open_level = world->IsGameWorld();
-    #else
-        bool ready_to_open_level = world->IsGameWorld() && GEngine->GetWorldContextFromWorld(world);
-    #endif
+#if WITH_EDITOR
+    bool ready_to_open_level = world->IsGameWorld();
+#else
+    bool ready_to_open_level = world->IsGameWorld() && GEngine->GetWorldContextFromWorld(world);
+#endif
 
     if (ready_to_open_level) {
 
@@ -115,14 +105,14 @@ void SimulationController::postWorldInitializationEventHandler(UWorld* world, co
         std::string level_name;
 
         std::string scene_id = Config::get<std::string>("SIMULATION_CONTROLLER.SCENE_ID");
-        std::string map_id = Config::get<std::string>("SIMULATION_CONTROLLER.MAP_ID");
+        std::string map_id   = Config::get<std::string>("SIMULATION_CONTROLLER.MAP_ID");
 
         if (scene_id != "") {
             if (map_id == "") {
                 map_id = scene_id;
             }
             world_path_name = "/Game/Scenes/" + scene_id + "/Maps/" + map_id + "." + map_id;
-            level_name      = "/Game/Scenes/" + scene_id + "/Maps/" + map_id;            
+            level_name      = "/Game/Scenes/" + scene_id + "/Maps/" + map_id;
         }
 
         std::cout << "[SPEAR | SimulationController.cpp] scene_id:             " << scene_id << std::endl;
@@ -132,6 +122,7 @@ void SimulationController::postWorldInitializationEventHandler(UWorld* world, co
         std::cout << "[SPEAR | SimulationController.cpp] world->GetName():     " << Unreal::toStdString(world->GetName()) << std::endl;
         std::cout << "[SPEAR | SimulationController.cpp] world->GetPathName(): " << Unreal::toStdString(world->GetPathName()) << std::endl;
 
+#if !WITH_EDITOR
         // if the current world is not the desired one, open the desired one
         if (world_path_name != "" && world_path_name != Unreal::toStdString(world->GetPathName())) {
             std::cout << "[SPEAR | SimulationController.cpp] Opening level: " << level_name << std::endl;
@@ -142,7 +133,9 @@ void SimulationController::postWorldInitializationEventHandler(UWorld* world, co
             UGameplayStatics::OpenLevel(world, Unreal::toFName(level_name));
             has_open_level_executed_ = true;
 
-        } else {
+        } else
+#endif
+        {
             has_open_level_executed_ = false;
 
             // we expect worldCleanupEventHandler(...) to be called before a new world is created
@@ -170,19 +163,20 @@ void SimulationController::worldBeginPlayEventHandler()
     }
 
     // set physics parameters
-    UPhysicsSettings* physics_settings = UPhysicsSettings::Get();
+    UPhysicsSettings* physics_settings           = UPhysicsSettings::Get();
     physics_settings->bEnableEnhancedDeterminism = Config::get<bool>("SIMULATION_CONTROLLER.ENABLE_ENHANCED_DETERMINISM");
-    physics_settings->bSubstepping = Config::get<bool>("SIMULATION_CONTROLLER.ENABLE_SUBSTEPPING");
-    physics_settings->MaxSubstepDeltaTime = Config::get<float>("SIMULATION_CONTROLLER.MAX_SUBSTEP_DELTA_TIME");
-    physics_settings->MaxSubsteps = Config::get<int32>("SIMULATION_CONTROLLER.MAX_SUBSTEPS");
-    physics_settings->ContactOffsetMultiplier = Config::get<float>("SIMULATION_CONTROLLER.CONTACT_OFFSET_MULTIPLIER");
-    physics_settings->MinContactOffset = Config::get<float>("SIMULATION_CONTROLLER.MIN_CONTACT_OFFSET");
-    physics_settings->MaxContactOffset = Config::get<float>("SIMULATION_CONTROLLER.MAX_CONTACT_OFFSET");
+    physics_settings->bSubstepping               = Config::get<bool>("SIMULATION_CONTROLLER.ENABLE_SUBSTEPPING");
+    physics_settings->MaxSubstepDeltaTime        = Config::get<float>("SIMULATION_CONTROLLER.MAX_SUBSTEP_DELTA_TIME");
+    physics_settings->MaxSubsteps                = Config::get<int32>("SIMULATION_CONTROLLER.MAX_SUBSTEPS");
+    physics_settings->ContactOffsetMultiplier    = Config::get<float>("SIMULATION_CONTROLLER.CONTACT_OFFSET_MULTIPLIER");
+    physics_settings->MinContactOffset           = Config::get<float>("SIMULATION_CONTROLLER.MIN_CONTACT_OFFSET");
+    physics_settings->MaxContactOffset           = Config::get<float>("SIMULATION_CONTROLLER.MAX_CONTACT_OFFSET");
 
     // Check that the physics substepping parameters match our deired simulation step time.
     // See https://carla.readthedocs.io/en/latest/adv_synchrony_timestep for more details.
     if (physics_settings->bSubstepping) {
-        ASSERT(Config::get<float>("SIMULATION_CONTROLLER.SIMULATION_STEP_TIME_SECONDS") <= physics_settings->MaxSubstepDeltaTime * physics_settings->MaxSubsteps);
+        ASSERT(Config::get<float>("SIMULATION_CONTROLLER.SIMULATION_STEP_TIME_SECONDS") <=
+               physics_settings->MaxSubstepDeltaTime * physics_settings->MaxSubsteps);
     }
 
     // set fixed simulation step time in seconds
@@ -231,9 +225,7 @@ void SimulationController::worldBeginPlayEventHandler()
     frame_state_ = FrameState::Idle;
 
     // initialize RPC server
-    rpc_server_ = std::make_unique<RpcServer>(
-        Config::get<std::string>("SIMULATION_CONTROLLER.IP"),
-        Config::get<int>("SIMULATION_CONTROLLER.PORT"));
+    rpc_server_ = std::make_unique<RpcServer>(Config::get<std::string>("SIMULATION_CONTROLLER.IP"), Config::get<int>("SIMULATION_CONTROLLER.PORT"));
     ASSERT(rpc_server_);
 
     bindFunctionsToRpcServer();
@@ -341,9 +333,7 @@ void SimulationController::bindFunctionsToRpcServer()
         FGenericPlatformMisc::RequestExit(immediate_shutdown);
     });
 
-    rpc_server_->bindAsync("ping", []() -> std::string {
-        return "SimulationController received a call to ping()...";
-    });
+    rpc_server_->bindAsync("ping", []() -> std::string { return "SimulationController received a call to ping()..."; });
 
     rpc_server_->bindAsync("getByteOrder", []() -> std::string {
         uint32_t dummy = 0x01020304;
@@ -354,12 +344,12 @@ void SimulationController::bindFunctionsToRpcServer()
         ASSERT(frame_state_ == FrameState::Idle);
 
         // reset promises and futures
-        frame_state_idle_promise_ = std::promise<void>();
-        frame_state_executing_pre_tick_promise_ = std::promise<void>();
+        frame_state_idle_promise_                = std::promise<void>();
+        frame_state_executing_pre_tick_promise_  = std::promise<void>();
         frame_state_executing_post_tick_promise_ = std::promise<void>();
 
-        frame_state_idle_future_ = frame_state_idle_promise_.get_future();
-        frame_state_executing_pre_tick_future_ = frame_state_executing_pre_tick_promise_.get_future();
+        frame_state_idle_future_                = frame_state_idle_promise_.get_future();
+        frame_state_executing_pre_tick_future_  = frame_state_executing_pre_tick_promise_.get_future();
         frame_state_executing_post_tick_future_ = frame_state_executing_post_tick_promise_.get_future();
 
         // indicate that we want the game thread to advance the simulation, wait here until frame_state == FrameState::ExecutingPreTick

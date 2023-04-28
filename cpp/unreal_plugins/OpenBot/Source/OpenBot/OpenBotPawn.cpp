@@ -19,8 +19,6 @@
 #include <PhysicsPublic.h>
 #include <PhysXIncludes.h>
 #include <PhysXPublic.h>
-#include <PhysXVehicleManager.h>
-#include <SimpleWheeledVehicleMovementComponent.h>
 #include <UObject/ConstructorHelpers.h>
 
 #include "CoreUtils/Config.h"
@@ -28,8 +26,8 @@
 #include "CoreUtils/SuppressCompilerWarnings.h"
 #include "CoreUtils/Unreal.h"
 #include "OpenBot/OpenBotWheel.h"
+#include "OpenBot/OpenBotComponent.h"
 
-BEGIN_SUPPRESS_COMPILER_WARNINGS
 AOpenBotPawn::AOpenBotPawn(const FObjectInitializer& object_initializer) : APawn(object_initializer)
 {
     std::cout << "[SPEAR | OpenBotPawn.cpp] AOpenBotPawn::AOpenBotPawn" << std::endl;
@@ -45,22 +43,22 @@ AOpenBotPawn::AOpenBotPawn(const FObjectInitializer& object_initializer) : APawn
     ASSERT(anim_instance.Succeeded());
 
     skeletal_mesh_component_ = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("AOpenBotPawn::skeletal_mesh_component_"));
-    ASSERT(skeletal_mesh_component_); 
+    ASSERT(skeletal_mesh_component_);
     skeletal_mesh_component_->SetSkeletalMesh(skeletal_mesh.Object);
     skeletal_mesh_component_->SetAnimClass(anim_instance.Class);
     skeletal_mesh_component_->SetCollisionProfileName(UCollisionProfile::Vehicle_ProfileName);
-    skeletal_mesh_component_->BodyInstance.bSimulatePhysics = true;
+    skeletal_mesh_component_->BodyInstance.bSimulatePhysics          = true;
     skeletal_mesh_component_->BodyInstance.bNotifyRigidBodyCollision = true;
-    skeletal_mesh_component_->BodyInstance.bUseCCD = true;
-    skeletal_mesh_component_->bBlendPhysics = true;
+    skeletal_mesh_component_->BodyInstance.bUseCCD                   = true;
+    skeletal_mesh_component_->bBlendPhysics                          = true;
     skeletal_mesh_component_->SetGenerateOverlapEvents(true);
     skeletal_mesh_component_->SetCanEverAffectNavigation(false);
 
     RootComponent = skeletal_mesh_component_;
 
     // Setup vehicle movement
-    vehicle_movement_component_ = CreateDefaultSubobject<USimpleWheeledVehicleMovementComponent>(TEXT("AOpenBotPawn::vehicle_movement_component_"));
-    ASSERT(vehicle_movement_component_); 
+    vehicle_movement_component_ = CreateDefaultSubobject<UOpenBotComponent>(TEXT("AOpenBotPawn::vehicle_movement_component_"));
+    ASSERT(vehicle_movement_component_);
     vehicle_movement_component_->SetIsReplicated(true); // Enable replication by default
     vehicle_movement_component_->UpdatedComponent = skeletal_mesh_component_;
 
@@ -68,86 +66,78 @@ AOpenBotPawn::AOpenBotPawn(const FObjectInitializer& object_initializer) : APawn
 
     vehicle_movement_component_->WheelSetups.SetNum(4);
 
-    vehicle_movement_component_->WheelSetups[0].WheelClass = wheel_class;
-    vehicle_movement_component_->WheelSetups[0].BoneName = FName("FL");
+    vehicle_movement_component_->WheelSetups[0].WheelClass       = wheel_class;
+    vehicle_movement_component_->WheelSetups[0].BoneName         = FName("FL");
     vehicle_movement_component_->WheelSetups[0].AdditionalOffset = FVector::ZeroVector; // Offset the wheel from the bone's location
 
-    vehicle_movement_component_->WheelSetups[1].WheelClass = wheel_class;
-    vehicle_movement_component_->WheelSetups[1].BoneName = FName("FR");
+    vehicle_movement_component_->WheelSetups[1].WheelClass       = wheel_class;
+    vehicle_movement_component_->WheelSetups[1].BoneName         = FName("FR");
     vehicle_movement_component_->WheelSetups[1].AdditionalOffset = FVector::ZeroVector; // Offset the wheel from the bone's location
 
-    vehicle_movement_component_->WheelSetups[2].WheelClass = wheel_class;
-    vehicle_movement_component_->WheelSetups[2].BoneName = FName("RL");
+    vehicle_movement_component_->WheelSetups[2].WheelClass       = wheel_class;
+    vehicle_movement_component_->WheelSetups[2].BoneName         = FName("RL");
     vehicle_movement_component_->WheelSetups[2].AdditionalOffset = FVector::ZeroVector; // Offset the wheel from the bone's location
 
-    vehicle_movement_component_->WheelSetups[3].WheelClass = wheel_class;
-    vehicle_movement_component_->WheelSetups[3].BoneName = FName("RR");
+    vehicle_movement_component_->WheelSetups[3].WheelClass       = wheel_class;
+    vehicle_movement_component_->WheelSetups[3].BoneName         = FName("RR");
     vehicle_movement_component_->WheelSetups[3].AdditionalOffset = FVector::ZeroVector; // Offset the wheel from the bone's location
 
-    vehicle_movement_component_->Mass               = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.MASS");
-    vehicle_movement_component_->InertiaTensorScale = FVector::OneVector;
-    vehicle_movement_component_->DragCoefficient    = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.DRAG_COEFFICIENT");
-    vehicle_movement_component_->ChassisWidth       = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.CHASSIS_WIDTH");
-    vehicle_movement_component_->ChassisHeight      = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.CHASSIS_HEIGHT");
-    vehicle_movement_component_->MaxEngineRPM       = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.MOTOR_MAX_RPM");
+    // vehicle_movement_component_->Mass               = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.MASS");
+    // vehicle_movement_component_->InertiaTensorScale = FVector::OneVector;
+    // vehicle_movement_component_->DragCoefficient    = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.DRAG_COEFFICIENT");
+    // vehicle_movement_component_->ChassisWidth       = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.CHASSIS_WIDTH");
+    // vehicle_movement_component_->ChassisHeight      = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.CHASSIS_HEIGHT");
+    // vehicle_movement_component_->MaxEngineRPM       = Config::get<float>("OPENBOT.OPENBOT_PAWN.VEHICLE_COMPONENT.MOTOR_MAX_RPM");
 
     // Setup camera
-    FVector camera_location(
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.POSITION_X"),
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.POSITION_Y"),
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.POSITION_Z"));
+    FVector camera_location(Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.POSITION_X"),
+                            Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.POSITION_Y"),
+                            Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.POSITION_Z"));
 
-    FRotator camera_orientation(
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.PITCH"),
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.YAW"),
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.ROLL"));
+    FRotator camera_orientation(Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.PITCH"),
+                                Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.YAW"),
+                                Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.ROLL"));
 
     camera_component_ = CreateDefaultSubobject<UCameraComponent>(TEXT("AOpenBotPawn::camera_component_"));
-    ASSERT(camera_component_); 
+    ASSERT(camera_component_);
 
     camera_component_->SetRelativeLocationAndRotation(camera_location, camera_orientation);
     camera_component_->SetupAttachment(skeletal_mesh_component_);
     camera_component_->bUsePawnControlRotation = false;
-    camera_component_->FieldOfView = Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.FOV");
+    camera_component_->FieldOfView             = Config::get<float>("OPENBOT.OPENBOT_PAWN.CAMERA_COMPONENT.FOV");
 
     // Setup IMU sensor
-    FVector imu_location(
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.POSITION_X"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.POSITION_Y"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.POSITION_Z"));
-    
-    FRotator imu_orientation(
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.PITCH"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.YAW"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.ROLL"));
-    
-    imu_component_ = CreateDefaultSubobject<UBoxComponent>(TEXT("AOpenBotPawn::imu_component_")); 
-    ASSERT(imu_component_ );
-    
-    imu_component_->SetRelativeLocationAndRotation(imu_location, imu_orientation); 
+    FVector imu_location(Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.POSITION_X"),
+                         Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.POSITION_Y"),
+                         Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.POSITION_Z"));
+
+    FRotator imu_orientation(Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.PITCH"), Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.YAW"),
+                             Config::get<float>("OPENBOT.OPENBOT_PAWN.IMU_COMPONENT.ROLL"));
+
+    imu_component_ = CreateDefaultSubobject<UBoxComponent>(TEXT("AOpenBotPawn::imu_component_"));
+    ASSERT(imu_component_);
+
+    imu_component_->SetRelativeLocationAndRotation(imu_location, imu_orientation);
     imu_component_->SetupAttachment(skeletal_mesh_component_);
 
     // Setup Sonar sensor
-    FVector sonar_location(
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.POSITION_X"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.POSITION_Y"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.POSITION_Z"));
-        
-    FRotator sonar_orientation(
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.PITCH"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.YAW"), 
-        Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.ROLL"));
-    
-    sonar_component_ = CreateDefaultSubobject<UBoxComponent>(TEXT("AOpenBotPawn::sonar_component_")); 
-    ASSERT(sonar_component_); 
+    FVector sonar_location(Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.POSITION_X"),
+                           Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.POSITION_Y"),
+                           Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.POSITION_Z"));
 
-    sonar_component_->SetRelativeLocationAndRotation(sonar_location, sonar_orientation); 
+    FRotator sonar_orientation(Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.PITCH"),
+                               Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.YAW"),
+                               Config::get<float>("OPENBOT.OPENBOT_PAWN.SONAR_COMPONENT.ROLL"));
+
+    sonar_component_ = CreateDefaultSubobject<UBoxComponent>(TEXT("AOpenBotPawn::sonar_component_"));
+    ASSERT(sonar_component_);
+
+    sonar_component_->SetRelativeLocationAndRotation(sonar_location, sonar_orientation);
     sonar_component_->SetupAttachment(skeletal_mesh_component_);
 
     // Initialize duty cycle
     duty_cycle_.setZero();
 }
-END_SUPPRESS_COMPILER_WARNINGS
 
 AOpenBotPawn::~AOpenBotPawn()
 {
@@ -169,34 +159,11 @@ void AOpenBotPawn::Tick(float delta_time)
     setDriveTorquesFromDutyCycle();
 }
 
-BEGIN_SUPPRESS_COMPILER_WARNINGS
 void AOpenBotPawn::resetWheels()
 {
-    PxRigidDynamic* rigid_body_dynamic_actor = vehicle_movement_component_->PVehicle->getRigidDynamicActor();
-    ASSERT(rigid_body_dynamic_actor);
-
-    // We want to reset the physics state of OpenBot, so we are inlining the below code from
-    // Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/PhysXVehicle/src/PxVehicleDrive.cpp::setToRestState(), and
-    // Engine/Source/ThirdParty/PhysX3/PhysX_3.4/Source/PhysXVehicle/src/PxVehicleWheels.cpp::setToRestState(), because these functions are protected.
-    if (!(rigid_body_dynamic_actor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC)) {
-        rigid_body_dynamic_actor->setLinearVelocity(PxVec3(0.0f, 0.0f, 0.0f));
-        rigid_body_dynamic_actor->setAngularVelocity(PxVec3(0.0f, 0.0f, 0.0f));
-        rigid_body_dynamic_actor->clearForce(PxForceMode::eACCELERATION);
-        rigid_body_dynamic_actor->clearForce(PxForceMode::eVELOCITY_CHANGE);
-        rigid_body_dynamic_actor->clearTorque(PxForceMode::eACCELERATION);
-        rigid_body_dynamic_actor->clearTorque(PxForceMode::eVELOCITY_CHANGE);
-    }
-    vehicle_movement_component_->PVehicle->mWheelsDynData.setToRestState();
-
-    // In our experience, it is not possible to call vehicle_movement_component->PVehicleDrive->mDriveDynData.setToRestState()
-    // because PVehicleDrive is NULL. So we do not attempt to call PVehicleDrive->mDriveDynData.setToRestState(), and we assert
-    // that PVehicleDrive is NULL.
-    // vehicle_movement_component->PVehicleDrive->mDriveDynData.setToRestState();
-    ASSERT(!vehicle_movement_component_->PVehicleDrive);
+    vehicle_movement_component_->ResetVehicle();
 }
-END_SUPPRESS_COMPILER_WARNINGS
 
-BEGIN_SUPPRESS_COMPILER_WARNINGS
 void AOpenBotPawn::setBrakeTorques(const Eigen::Vector4f& brake_torques)
 {
     // Torque applied to the brakes, expressed in [N.m]. The applied torque persists until the next call to SetBrakeTorque.
@@ -205,7 +172,6 @@ void AOpenBotPawn::setBrakeTorques(const Eigen::Vector4f& brake_torques)
     vehicle_movement_component_->SetBrakeTorque(brake_torques(2), 2);
     vehicle_movement_component_->SetBrakeTorque(brake_torques(3), 3);
 }
-END_SUPPRESS_COMPILER_WARNINGS
 
 Eigen::Vector4f AOpenBotPawn::getDutyCycle() const
 {
@@ -222,17 +188,15 @@ void AOpenBotPawn::setDutyCycle(const Eigen::Vector4f& duty_cycle)
     duty_cycle_ = duty_cycle.cwiseMin(1.f).cwiseMax(-1.f);
 }
 
-BEGIN_SUPPRESS_COMPILER_WARNINGS
 Eigen::Vector4f AOpenBotPawn::getWheelRotationSpeeds() const
 {
-    Eigen::Vector4f wheel_rotation_speeds;
-    wheel_rotation_speeds(0) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(0); // Expressed in [RPM]
-    wheel_rotation_speeds(1) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(1); // Expressed in [RPM]
-    wheel_rotation_speeds(2) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(2); // Expressed in [RPM]
-    wheel_rotation_speeds(3) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(3); // Expressed in [RPM]
-    return rpmToRadSec(wheel_rotation_speeds); // Expressed in [rad/s]
+    // Eigen::Vector4f wheel_rotation_speeds;
+    // wheel_rotation_speeds(0) = vehicle_movement_component_->VehicleSimulationPT->PVehicle->GetWheel(0).GetAngularVelocity(); // Expressed in [RPM]
+    // wheel_rotation_speeds(1) = vehicle_movement_component_->VehicleSimulationPT->PVehicle->GetWheel(1).GetAngularVelocity(); // Expressed in [RPM]
+    // wheel_rotation_speeds(2) = vehicle_movement_component_->VehicleSimulationPT->PVehicle->GetWheel(2).GetAngularVelocity(); // Expressed in [RPM]
+    // wheel_rotation_speeds(3) = vehicle_movement_component_->VehicleSimulationPT->PVehicle->GetWheel(3).GetAngularVelocity(); // Expressed in [RPM]
+    return rpmToRadSec(vehicle_movement_component_->getWheelRotationSpeeds()); // Expressed in [rad/s]
 }
-END_SUPPRESS_COMPILER_WARNINGS
 
 void AOpenBotPawn::moveForward(float forward)
 {
@@ -258,7 +222,6 @@ void AOpenBotPawn::moveRight(float right)
     duty_cycle_ = duty_cycle_.cwiseMin(1.f).cwiseMax(-1.f);
 }
 
-BEGIN_SUPPRESS_COMPILER_WARNINGS
 void AOpenBotPawn::setDriveTorquesFromDutyCycle()
 {
     // Motor torque: 1200 gf.cm (gram force centimeter) == 0.1177 N.m
@@ -270,30 +233,26 @@ void AOpenBotPawn::setDriveTorquesFromDutyCycle()
     auto gear_ratio              = Config::get<float>("OPENBOT.OPENBOT_PAWN.GEAR_RATIO");              // Gear ratio of the OpenBot motors
     auto motor_torque_constant   = 1.f / motor_velocity_constant;                                      // Motor torque constant in [rad/s/V]
 
-    auto battery_voltage         = Config::get<float>("OPENBOT.OPENBOT_PAWN.BATTERY_VOLTAGE");         // Voltage of the battery powering the OpenBot [V]
-    auto control_dead_zone       = Config::get<float>("OPENBOT.OPENBOT_PAWN.CONTROL_DEAD_ZONE");       // Absolute duty cycle (in the ACTION_SCALE range)
-                                                                                                       // below which a command does not produces any torque
-                                                                                                       // on the vehicle
-    auto motor_torque_max        = Config::get<float>("OPENBOT.OPENBOT_PAWN.MOTOR_TORQUE_MAX");        // Motor maximal torque [N.m]
-    auto electrical_resistance   = Config::get<float>("OPENBOT.OPENBOT_PAWN.ELECTRICAL_RESISTANCE");   // Motor winding electrical resistance [Ohms]
-    auto electrical_inductance   = Config::get<float>("OPENBOT.OPENBOT_PAWN.ELECTRICAL_INDUCTANCE");   // Motor winding electrical inductance [Henry]
+    auto battery_voltage   = Config::get<float>("OPENBOT.OPENBOT_PAWN.BATTERY_VOLTAGE");           // Voltage of the battery powering the OpenBot [V]
+    auto control_dead_zone = Config::get<float>("OPENBOT.OPENBOT_PAWN.CONTROL_DEAD_ZONE");         // Absolute duty cycle (in the ACTION_SCALE range)
+                                                                                                   // below which a command does not produces any torque
+                                                                                                   // on the vehicle
+    auto motor_torque_max      = Config::get<float>("OPENBOT.OPENBOT_PAWN.MOTOR_TORQUE_MAX");      // Motor maximal torque [N.m]
+    auto electrical_resistance = Config::get<float>("OPENBOT.OPENBOT_PAWN.ELECTRICAL_RESISTANCE"); // Motor winding electrical resistance [Ohms]
+    auto electrical_inductance = Config::get<float>("OPENBOT.OPENBOT_PAWN.ELECTRICAL_INDUCTANCE"); // Motor winding electrical inductance [Henry]
 
     // Speed multiplier defined in the OpenBot to map a [-1,1] action to a suitable command to
     // be processed by the low-level microcontroller. For more details, feel free to check the
     // "speedMultiplier" command in the OpenBot code.
     // https://github.com/isl-org/OpenBot/blob/master/android/app/src/main/java/org/openbot/vehicle/Vehicle.java#L375
-    
+
     auto action_scale = Config::get<float>("OPENBOT.OPENBOT_PAWN.ACTION_SCALE");
 
     // Acquire the ground truth motor and wheel velocity for motor counter-electromotive force
     // computation purposes (or alternatively friction computation purposes).
 
     // The ground truth velocity of the robot wheels in [RPM]
-    Eigen::Vector4f wheel_rotation_speeds;
-    wheel_rotation_speeds(0) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(0); // Expressed in [RPM]
-    wheel_rotation_speeds(1) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(1); // Expressed in [RPM]
-    wheel_rotation_speeds(2) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(2); // Expressed in [RPM]
-    wheel_rotation_speeds(3) = vehicle_movement_component_->PVehicle->mWheelsDynData.getWheelRotationSpeed(3); // Expressed in [RPM]
+    Eigen::Vector4f wheel_rotation_speeds = vehicle_movement_component_->getWheelRotationSpeeds();
 
     // The ground truth rotation speed of the motors in [rad/s]
     Eigen::Vector4f motor_speed = gear_ratio * rpmToRadSec(wheel_rotation_speeds); // Expressed in [rad/s]
@@ -330,13 +289,12 @@ void AOpenBotPawn::setDriveTorquesFromDutyCycle()
     //
     // This file also contains a bunch of useful functions such as SetBrakeTorque or SetSteerAngle.
     // Please take a look if you want to modify the way the simulated vehicle is being controlled.
-    
+
     vehicle_movement_component_->SetDriveTorque(wheel_torque(0), 0);
     vehicle_movement_component_->SetDriveTorque(wheel_torque(1), 1);
     vehicle_movement_component_->SetDriveTorque(wheel_torque(2), 2);
     vehicle_movement_component_->SetDriveTorque(wheel_torque(3), 3);
 }
-END_SUPPRESS_COMPILER_WARNINGS
 
 // Rev per minute to rad/s
 Eigen::VectorXf AOpenBotPawn::rpmToRadSec(Eigen::VectorXf rpm)

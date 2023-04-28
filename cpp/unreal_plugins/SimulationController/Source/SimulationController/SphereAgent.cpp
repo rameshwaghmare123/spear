@@ -275,12 +275,12 @@ std::map<std::string, std::vector<uint8_t>> SphereAgent::getObservation() const
         FVector linear_velocity = static_mesh_component_->GetPhysicsLinearVelocity();
         float yaw = rotation_.Yaw;
 
-        observation["compass"] = Std::reinterpret_as<uint8_t>(std::vector<float>{
-            Config::get<float>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.OFFSET_TO_GOAL_SCALE") * sphere_to_goal.X,
-            Config::get<float>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.OFFSET_TO_GOAL_SCALE") * sphere_to_goal.Y,
-            Config::get<float>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.LINEAR_VELOCITY_SCALE") * linear_velocity.X,
-            Config::get<float>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.LINEAR_VELOCITY_SCALE") * linear_velocity.Y,
-            Config::get<float>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.YAW_SCALE") * yaw});
+        observation["compass"] = Std::reinterpret_as<uint8_t>(std::vector<double>{
+            Config::get<double>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.OFFSET_TO_GOAL_SCALE") * sphere_to_goal.X,
+            Config::get<double>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.OFFSET_TO_GOAL_SCALE") * sphere_to_goal.Y,
+            Config::get<double>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.LINEAR_VELOCITY_SCALE") * linear_velocity.X,
+            Config::get<double>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.LINEAR_VELOCITY_SCALE") * linear_velocity.Y,
+            Config::get<double>("SIMULATION_CONTROLLER.SPHERE_AGENT.COMPASS.YAW_SCALE") * yaw});
     }
 
     std::map<std::string, std::vector<uint8_t>> camera_sensor_observation = camera_sensor_->getObservation(observation_components);

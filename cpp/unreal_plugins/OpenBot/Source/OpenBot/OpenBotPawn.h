@@ -13,7 +13,7 @@
 
 class UBoxComponent;
 class UCameraComponent;
-class USimpleWheeledVehicleMovementComponent;
+class UOpenBotComponent;
 class USkeletalMeshComponent;
 
 // This class is inspired by the WheeledVehicle class, defined in:
@@ -50,7 +50,7 @@ public:
     Eigen::Vector4f getWheelRotationSpeeds() const;
 
     USkeletalMeshComponent* skeletal_mesh_component_ = nullptr;
-    USimpleWheeledVehicleMovementComponent* vehicle_movement_component_ = nullptr;
+    UOpenBotComponent* vehicle_movement_component_ = nullptr;
     UCameraComponent* camera_component_ = nullptr;
     UBoxComponent* imu_component_ = nullptr;
     UBoxComponent* sonar_component_ = nullptr;

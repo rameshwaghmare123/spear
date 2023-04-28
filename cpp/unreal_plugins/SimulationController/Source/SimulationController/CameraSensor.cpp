@@ -287,84 +287,6 @@ void CameraSensor::initializeSceneCaptureComponentFinalColor(USceneCaptureCompon
     scene_capture_component->PostProcessSettings.AutoExposureSpeedDown =
         Config::get<float>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_AUTO_EXPOSURE_SPEED_DOWN");
 
-    // enable raytracing features
-    scene_capture_component->bUseRayTracingIfEnabled =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_USE_RAYTRACING_IF_ENABLED");
-
-    // update indirect lighting 
-    scene_capture_component->PostProcessSettings.bOverride_IndirectLightingIntensity =
-        Config::get<bool> ("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_INDIRECT_LIGHTING_INTENSITY");
-    scene_capture_component->PostProcessSettings.IndirectLightingIntensity =
-        Config::get<float>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_INDIRECT_LIGHTING_INTENSITY");
-
-    // update raytracing global illumination
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingGI =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_GI");
-
-    auto raytracing_gi_type = Config::get<std::string>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_GI_TYPE");
-    if (raytracing_gi_type == "BruteForce") {
-        scene_capture_component->PostProcessSettings.RayTracingGIType = ERayTracingGlobalIlluminationType::BruteForce;
-    } else if (raytracing_gi_type != "") {
-        ASSERT(false);
-    }
-
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingGIMaxBounces =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_GI_MAX_BOUNCES");
-    scene_capture_component->PostProcessSettings.RayTracingGIMaxBounces =
-        Config::get<unsigned long>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_GI_MAX_BOUNCES");
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingGISamplesPerPixel =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_GI_SAMPLES_PER_PIXEL");
-    scene_capture_component->PostProcessSettings.RayTracingGISamplesPerPixel =
-        Config::get<unsigned long>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_GI_SAMPLES_PER_PIXEL");
-
-    // update raytracing ambient occlusion
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingAO =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_AO");
-    scene_capture_component->PostProcessSettings.RayTracingAO =
-        Config::get<unsigned long>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_AO");
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingAOSamplesPerPixel =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_AO_SAMPLES_PER_PIXEL");
-    scene_capture_component->PostProcessSettings.RayTracingAOSamplesPerPixel =
-        Config::get<unsigned long>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_AO_SAMPLES_PER_PIXEL");
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingAOIntensity =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_AO_INTENSITY");
-    scene_capture_component->PostProcessSettings.RayTracingAOIntensity =
-        Config::get<float>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_AO_INTENSITY");
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingAORadius =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_AO_RADIUS");
-    scene_capture_component->PostProcessSettings.RayTracingAORadius =
-        Config::get<float>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_AO_RADIUS");
-
-    // update raytracing reflections
-    scene_capture_component->PostProcessSettings.bOverride_ReflectionsType =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_REFLECTIONS_TYPE");
-
-    auto reflections_type = Config::get<std::string>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_REFLECTIONS_TYPE");
-    if (reflections_type == "RayTracing") {
-        scene_capture_component->PostProcessSettings.ReflectionsType = EReflectionsType::RayTracing; 
-    } else if (reflections_type != "") {
-        ASSERT(false); 
-    }
-
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingReflectionsMaxBounces =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_REFLECTIONS_MAX_BOUNCES");
-    scene_capture_component->PostProcessSettings.RayTracingReflectionsMaxBounces =
-        Config::get<unsigned long>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_REFLECTIONS_MAX_BOUNCES");
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingReflectionsMaxRoughness =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_REFLECTIONS_MAX_ROUGHNESS");
-    scene_capture_component->PostProcessSettings.RayTracingReflectionsMaxRoughness =
-        Config::get<float>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_REFLECTIONS_MAX_ROUGHNESS");
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingReflectionsSamplesPerPixel =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_REFLECTIONS_SAMPLES_PER_PIXEL");
-    scene_capture_component->PostProcessSettings.RayTracingReflectionsSamplesPerPixel =
-        Config::get<unsigned long>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_REFLECTIONS_SAMPLES_PER_PIXEL");
-    scene_capture_component->PostProcessSettings.bOverride_RayTracingReflectionsTranslucency =
-        Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_OVERRIDE_RAYTRACING_REFLECTIONS_TRANSLUCENCY");
-    scene_capture_component->PostProcessSettings.RayTracingReflectionsTranslucency =
-        Config::get<unsigned long>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_RAYTRACING_REFLECTIONS_TRANSLUCENCY");
-
-    // update show flags
-
     // enabled by FEngineShowFlags::EnableAdvancedFeatures()
     scene_capture_component->ShowFlags.SetAmbientOcclusion(
         Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_SET_AMBIENT_OCCLUSION"));
@@ -402,6 +324,28 @@ void CameraSensor::initializeSceneCaptureComponentFinalColor(USceneCaptureCompon
         Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_SET_RAYTRACED_DISTANCE_FIELD_SHADOWS"));
     scene_capture_component->ShowFlags.SetDynamicShadows(
         Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.FINAL_COLOR_SET_DYNAMIC_SHADOWS"));
+
+    // scene_capture_component->bAlwaysPersistRenderingState = true;
+    // scene_capture_component->bCaptureEveryFrame = true;
+    // scene_capture_component->bUseRayTracingIfEnabled = false;
+    scene_capture_component->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod = true;
+    scene_capture_component->PostProcessSettings.DynamicGlobalIlluminationMethod = EDynamicGlobalIlluminationMethod::Lumen;
+    scene_capture_component->PostProcessSettings.bOverride_ReflectionMethod = true;
+    scene_capture_component->PostProcessSettings.ReflectionMethod = EReflectionMethod::Lumen;
+
+    scene_capture_component->PostProcessSettings.bOverride_LumenSceneLightingQuality = true;
+    scene_capture_component->PostProcessSettings.LumenSceneLightingQuality = 2.0f;
+    scene_capture_component->PostProcessSettings.bOverride_LumenSceneDetail = true;
+    scene_capture_component->PostProcessSettings.LumenSceneDetail = 1.0f;
+    scene_capture_component->PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
+    scene_capture_component->PostProcessSettings.LumenSurfaceCacheResolution = 1.0f;
+
+    scene_capture_component->PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
+    scene_capture_component->PostProcessSettings.LumenReflectionQuality = 1.0f;
+    scene_capture_component->PostProcessSettings.bOverride_LumenSurfaceCacheResolution = true;
+    scene_capture_component->PostProcessSettings.LumenRayLightingMode = ELumenRayLightingModeOverride::HitLighting;
+    scene_capture_component->PostProcessSettings.bOverride_LumenFrontLayerTranslucencyReflections = true;
+    scene_capture_component->PostProcessSettings.LumenFrontLayerTranslucencyReflections = true;
 }
 
 void CameraSensor::initializeSceneCaptureComponentNonFinalColor(USceneCaptureComponent2D* scene_capture_component, const std::string& render_pass_name)

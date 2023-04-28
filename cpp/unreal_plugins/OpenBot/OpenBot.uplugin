@@ -22,13 +22,13 @@
         }
     ],
     "Plugins": [
-        {
-            "Name": "CoreUtils",
-            "Enabled": true
-        },
-        {
-            "Name": "PhysXVehicles",
-            "Enabled": true
-        }
+      {
+        "Name": "CoreUtils",
+        "Enabled": true
+      },
+      {
+        "Name": "ChaosVehiclesPlugin",
+        "Enabled": true
+      }
     ]
 }

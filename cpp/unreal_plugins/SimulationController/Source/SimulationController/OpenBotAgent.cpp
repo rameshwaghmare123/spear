@@ -303,7 +303,7 @@ std::map<std::string, std::vector<uint8_t>> OpenBotAgent::getObservation() const
     if (Std::contains(observation_components, "state_data")) {
         FVector location = open_bot_pawn_->GetActorLocation();
         FRotator rotation = open_bot_pawn_->GetActorRotation();
-        observation["state_data"] = Std::reinterpret_as<uint8_t>(std::vector<float>{
+        observation["state_data"] = Std::reinterpret_as<uint8_t>(std::vector<double>{
             location.X,
             location.Y,
             location.Z,
@@ -332,7 +332,7 @@ std::map<std::string, std::vector<uint8_t>> OpenBotAgent::getObservation() const
     }
 
     if (Std::contains(observation_components, "imu")) {
-        observation["imu"] = Std::reinterpret_as<uint8_t>(std::vector<float>{
+        observation["imu"] = Std::reinterpret_as<uint8_t>(std::vector<double>{
             imu_sensor_->linear_acceleration_.X,
             imu_sensor_->linear_acceleration_.Y,
             imu_sensor_->linear_acceleration_.Z,

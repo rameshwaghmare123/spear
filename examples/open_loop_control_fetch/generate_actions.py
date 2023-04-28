@@ -26,8 +26,8 @@ def get_action(move_forward=0.0, move_right=0.0, gripper_force=1.0, arm_pose_ble
     action = {}
 
     # base joints
-    action["joint.wheel_joint_r"] = move_forward + move_right
-    action["joint.wheel_joint_l"] = move_forward - move_right
+    action["joint.wheel_joint_r"] = -move_forward - move_right
+    action["joint.wheel_joint_l"] = -move_forward + move_right
 
     # arm joints
     arm_pose = np.zeros([7])
@@ -165,7 +165,7 @@ def get_actions_for_kujiale_0000():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--scene_id", default=os.path.join(os.path.dirname(os.path.realpath(__file__)), "kujiale_0000"))
+    parser.add_argument("--scene_id", default="starter_content_0000")
     args = parser.parse_args()
 
     if args.scene_id == "starter_content_0000":
