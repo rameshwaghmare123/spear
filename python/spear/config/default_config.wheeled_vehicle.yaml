@@ -7,6 +7,9 @@ WHEELED_VEHICLE:
     SKELETAL_MESH: "/WheeledVehicle/OpenBot_V1/Meshes/OpenBot_V1_Mesh.OpenBot_V1_Mesh"
     ANIM_INSTANCE: "/WheeledVehicle/OpenBot_V1/Meshes/OpenBot_V1_Animation.OpenBot_V1_Animation_C"
 
+    # SKELETAL_MESH: "/OpenBot/V0/Meshes/OpenBot_V0_Mesh.OpenBot_V0_Mesh"
+    # ANIM_INSTANCE: "/OpenBot/V0/Meshes/OpenBot_V0_Animation.OpenBot_V0_Animation_C"
+
     CAMERA_COMPONENT:
       POSITION_X: -60.0              # Camera relative position in [cm]
       POSITION_Y: 50.0              # Camera relative position in [cm]

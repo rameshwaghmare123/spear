@@ -11,6 +11,9 @@ import os
 import spear
 import time
 
+import matplotlib.pyplot as plt
+DIR_NAME = os.path.join(os.path.dirname(__file__), "images")
+os.makedirs(DIR_NAME, exist_ok=True)
 
 NUM_STEPS = 100
 
@@ -39,7 +42,7 @@ if __name__ == "__main__":
         start_time_seconds = time.time()
     else:
         cv2.imshow("camera.final_color", obs["camera.final_color"]) # note that spear.Env returns BGRA by default
-        cv2.waitKey(0)
+        cv2.waitKey(1)
 
     # take a few steps
     for i in range(NUM_STEPS):
@@ -60,12 +63,13 @@ if __name__ == "__main__":
                 spear.log("camera:", obs["camera.final_color"].shape, obs["camera.final_color"].dtype)
                 spear.log("sonar:", obs["sonar"])
                 spear.log(reward, done, info)
+                # plt.imsave(os.path.realpath(os.path.join(DIR_NAME, "%04d.png"%i)), obs["camera.final_color"][:,:,[2,1,0]])
         else:
             assert False
 
-        if not args.benchmark:
-            cv2.imshow("camera.final_color", obs["camera.final_color"]) # note that spear.Env returns BGRA by default
-            cv2.waitKey(0)
+        # if not args.benchmark:
+            # cv2.imshow("camera.final_color", obs["camera.final_color"]) # note that spear.Env returns BGRA by default
+            # cv2.waitKey(0)
 
         if done:
             env.reset()
