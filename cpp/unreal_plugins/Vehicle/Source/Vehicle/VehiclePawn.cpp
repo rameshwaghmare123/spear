@@ -42,6 +42,9 @@ AVehiclePawn::AVehiclePawn(const FObjectInitializer& object_initializer) :
     GetMesh()->SetAnimClass(anim_instance.Class);
     GetMesh()->BodyInstance.bSimulatePhysics = true;
 
+    //GetMesh()->SetSimulatePhysics(true); // did not work
+    //GetMesh()->SetNotifyRigidBodyCollision(true); // did not work
+
     // Setup camera
     camera_component_ = CreateDefaultSubobject<UCameraComponent>(TEXT("camera_component"));
     SP_ASSERT(camera_component_);
@@ -78,6 +81,80 @@ AVehiclePawn::AVehiclePawn(const FObjectInitializer& object_initializer) :
 
     imu_component_->SetRelativeLocationAndRotation(imu_location, imu_rotation);
     imu_component_->SetupAttachment(GetMesh());
+}
+
+void AVehiclePawn::SetupPlayerInputComponent(UInputComponent* input_component)
+{
+    SP_ASSERT(input_component);
+    Super::SetupPlayerInputComponent(input_component);
+
+    input_component->BindAxisKey(EKeys::I);
+    input_component->BindAxisKey(EKeys::K);
+    input_component->BindAxisKey(EKeys::J);
+    input_component->BindAxisKey(EKeys::L);
+}
+
+void AVehiclePawn::Tick(float delta_time)
+{
+    Super::Tick(delta_time);
+
+    constexpr float epsilon = 1e-2;
+
+    float forward = InputComponent->GetAxisKeyValue(EKeys::I);
+    float reverse = InputComponent->GetAxisKeyValue(EKeys::K);
+    float right = InputComponent->GetAxisKeyValue(EKeys::L);
+    float left = InputComponent->GetAxisKeyValue(EKeys::J);
+
+    float fl = 0.0;
+    float fr = 0.0;
+    float rl = 0.0;
+    float rr = 0.0;
+
+    if (forward > epsilon) {
+        fl += forward;
+        fr += forward;
+        rl += forward;
+        rr += forward;
+    }
+    else if (reverse > epsilon) {
+        fl -= reverse;
+        fr -= reverse;
+        rl -= reverse;
+        rr -= reverse;
+    }
+    else if (right > epsilon) {
+        fl += right;
+        fr -= right;
+        rl += right;
+        rr -= right;
+    }
+    else if (left > epsilon) {
+        fl -= left;
+        fr += left;
+        rl -= left;
+        rr += left;
+    }
+
+    UVehicleMovementComponent* vehicle_movement_component = dynamic_cast<UVehicleMovementComponent*>(GetVehicleMovementComponent());
+    SP_ASSERT(vehicle_movement_component);
+
+    vehicle_movement_component->SetDriveTorque(fl, 0);
+    vehicle_movement_component->SetDriveTorque(fr, 1);
+    vehicle_movement_component->SetDriveTorque(rl, 2);
+    vehicle_movement_component->SetDriveTorque(rr, 3);
+}
+
+void AVehiclePawn::BeginPlay()
+{
+    SP_LOG("Begin Play");
+    Super::BeginPlay();
+
+    this->OnActorHit.AddDynamic(this, &AVehiclePawn::OnActorHitHandler);
+}
+
+void AVehiclePawn::OnActorHitHandler(AActor* self_actor, AActor* other_actor, FVector normal_impulse, const FHitResult& hit_result)
+{
+    SP_LOG("On Actor Hit");
 }
 
 AVehiclePawn::~AVehiclePawn()

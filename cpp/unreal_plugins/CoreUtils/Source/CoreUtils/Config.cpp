@@ -19,8 +19,13 @@ void Config::initialize()
     if (FParse::Value(FCommandLine::Get(), TEXT("config_file="), config_file)) {
         s_config_ = YAML::LoadFile(Unreal::toStdString(config_file));
         s_initialized_ = true;
+    } else if (FPaths::FileExists(FPaths::ConvertRelativePathToFull(FPaths::ProjectDir().Append("Temp/config.yaml")))) {
+        config_file = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir().Append("Temp/config.yaml"));
+        s_config_ = YAML::LoadFile(Unreal::toStdString(config_file));
+        s_initialized_ = true;
     } else {
         s_initialized_ = false;
+        ASSERT(false);
     }
 }
 

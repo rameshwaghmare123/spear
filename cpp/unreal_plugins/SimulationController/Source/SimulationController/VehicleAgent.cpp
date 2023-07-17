@@ -32,8 +32,6 @@
 
 VehicleAgent::VehicleAgent(UWorld* world)
 {
-    SP_LOG_CURRENT_FUNCTION();
-
     FVector spawn_location = FVector::ZeroVector;
     FRotator spawn_rotation = FRotator::ZeroRotator;
     std::string spawn_mode = Config::get<std::string>("SIMULATION_CONTROLLER.VEHICLE_AGENT.SPAWN_MODE");
@@ -86,8 +84,6 @@ VehicleAgent::VehicleAgent(UWorld* world)
 
 VehicleAgent::~VehicleAgent()
 {
-    SP_LOG_CURRENT_FUNCTION();
-
     auto observation_components = Config::get<std::vector<std::string>>("SIMULATION_CONTROLLER.VEHICLE_AGENT.OBSERVATION_COMPONENTS");
 
     if (Std::contains(observation_components, "imu")) {
@@ -270,5 +266,6 @@ void VehicleAgent::reset()
 
 bool VehicleAgent::isReady() const
 {
+    SP_LOG("velocity value is :", vehicle_pawn_->GetVelocity().Size());
     return vehicle_pawn_->GetVelocity().Size() <= Config::get<float>("SIMULATION_CONTROLLER.VEHICLE_AGENT.IS_READY_VELOCITY_THRESHOLD");
 }

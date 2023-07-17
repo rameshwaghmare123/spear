@@ -20,6 +20,7 @@
 #include "CoreUtils/ArrayDesc.h"
 #include "CoreUtils/Assert.h"
 #include "CoreUtils/Config.h"
+#include "CoreUtils/Log.h"
 #include "CoreUtils/Std.h"
 #include "CoreUtils/Unreal.h"
 #include "SimulationController/ActorHitEventComponent.h"
@@ -207,9 +208,13 @@ void ImitationLearningTask::actorHitEventHandler(AActor* self_actor, AActor* oth
 {
     SP_ASSERT(self_actor == agent_actor_);
 
+    SP_LOG("Vehicle Agent collided to");
+
     if (other_actor == goal_actor_) {
         hit_goal_ = true;
+        SP_LOG("    goal");
     } else if (!Std::contains(obstacle_ignore_actors_, other_actor)) {
         hit_obstacle_ = true;
+        SP_LOG("    obstacle");
     }
 }

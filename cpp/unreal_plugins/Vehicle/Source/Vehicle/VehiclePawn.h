@@ -22,6 +22,14 @@ public:
     AVehiclePawn(const FObjectInitializer& object_initializer);
     ~AVehiclePawn();
 
+    void BeginPlay();
+
+    UFUNCTION()
+    void OnActorHitHandler(AActor* self_actor, AActor* other_actor, FVector normal_impulse, const FHitResult& hit_result);
+
+    void SetupPlayerInputComponent(UInputComponent* input_component) override;
+    void Tick(float delta_time) override;
+
     UCameraComponent* camera_component_ = nullptr;
     UBoxComponent* imu_component_ = nullptr;
 };

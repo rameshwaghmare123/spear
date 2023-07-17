@@ -14,13 +14,16 @@
 #include "CoreUtils/Unreal.h"
 #include "SpearSim/SpearSimSpectatorPawn.h"
 
+//#include "Vehicle/VehiclePawn.h"
+
 class FObjectInitializer;
 
 ASpearSimGameMode::ASpearSimGameMode(const FObjectInitializer& object_initializer) : AGameModeBase(object_initializer)
 {
     SP_LOG_CURRENT_FUNCTION();
 
-    DefaultPawnClass = ASpearSimSpectatorPawn::StaticClass();
+    //DefaultPawnClass = ASpearSimSpectatorPawn::StaticClass();
+    //DefaultPawnClass = AVehiclePawn::StaticClass();
 }
 
 ASpearSimGameMode::~ASpearSimGameMode()
