@@ -1,44 +1,72 @@
 {
-    "FileVersion": 3,
-    "EngineAssociation": "5.2",
-    "Category": "",
-    "Description": "",
-    "Modules": [
-        {
-            "Name": "SpearSim",
-            "Type": "Runtime",
-            "LoadingPhase": "Default"
-        },
-        {
-            "Name": "SpearSimEditor",
-            "Type": "Editor",
-            "LoadingPhase": "Default"
-        }
-    ],
-    "Plugins": [
-        {
-            "Name": "CommonModuleRules",
-            "Enabled": true
-        },
-        {
-            "Name": "CoreUtils",
-            "Enabled": true
-        },
-        {
-            "Name": "HDRIBackdrop",
-            "Enabled": true
-        },
-        {
-            "Name": "SimulationController",
-            "Enabled": true
-        },
-        {
-            "Name": "UrdfBot",
-            "Enabled": false
-        },
-        {
-            "Name": "Vehicle",
-            "Enabled": true
-        }
-    ]
+	"FileVersion": 3,
+	"EngineAssociation": "5.2",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "SpearSim",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "SpearSimEditor",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "CommonModuleRules",
+			"Enabled": true
+		},
+		{
+			"Name": "CoreUtils",
+			"Enabled": true
+		},
+		{
+			"Name": "HDRIBackdrop",
+			"Enabled": true
+		},
+		{
+			"Name": "SimulationController",
+			"Enabled": true
+		},
+		{
+			"Name": "UrdfBot",
+			"Enabled": false
+		},
+		{
+			"Name": "Vehicle",
+			"Enabled": true
+		},
+		{
+			"Name": "ScriptableToolsEditorMode",
+			"Enabled": true
+		},
+		{
+			"Name": "ScriptableToolsFramework",
+			"Enabled": true
+		},
+		{
+			"Name": "ScatterToolBrush",
+			"Enabled": true
+		},
+		{
+			"Name": "BoxWithCustomText",
+			"Enabled": true
+		},
+		{
+			"Name": "PCG",
+			"Enabled": true
+		},
+		{
+			"Name": "PCG_BoxesWithCustomText",
+			"Enabled": true
+		},
+		{
+			"Name": "BoxWithCustomText-Substituer",
+			"Enabled": true
+		}
+	]
 }
