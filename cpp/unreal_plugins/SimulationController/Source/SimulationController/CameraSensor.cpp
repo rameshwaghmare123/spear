@@ -37,45 +37,66 @@ struct FLinearColor;
 // potentially combine depth and/or world-space position and/or normal data into a single rendering pass. Similarly,
 // we could also combine segmentation data and instance data into a single pass.
 const std::map<std::string, int> RENDER_PASS_NUM_CHANNELS = {
-    {"depth",        4},
-    {"final_color",  4},
-    {"normal",       4},
-    {"segmentation", 4}};
+    {"depth",                  4},
+    {"depth_visualize",        4},
+    {"final_color",            4},
+    {"normal",                 4},
+    {"normal_visualize",       4},
+    {"segmentation",           4},
+    {"segmentation_visualize", 4}};
 
 const std::map<std::string, int> RENDER_PASS_NUM_BYTES_PER_CHANNEL = {
-    {"depth",        4},
-    {"final_color",  1},
-    {"normal",       4},
-    {"segmentation", 1}};
+    {"depth",                  4},
+    {"depth_visualize",        4},
+    {"final_color",            1},
+    {"normal",                 4},
+    {"normal_visualize",       4},
+    {"segmentation",           1},
+    {"segmentation_visualize", 1}};
 
 const std::map<std::string, ETextureRenderTargetFormat> RENDER_PASS_TEXTURE_RENDER_TARGET_FORMAT = {
-    {"depth",        ETextureRenderTargetFormat::RTF_RGBA32f},
-    {"final_color",  ETextureRenderTargetFormat::RTF_RGBA8_SRGB},
-    {"normal",       ETextureRenderTargetFormat::RTF_RGBA32f},
-    {"segmentation", ETextureRenderTargetFormat::RTF_RGBA8}};
+    {"depth",                  ETextureRenderTargetFormat::RTF_RGBA32f},
+    {"depth_visualize",        ETextureRenderTargetFormat::RTF_RGBA32f},
+    {"final_color",            ETextureRenderTargetFormat::RTF_RGBA8_SRGB},
+    {"normal",                 ETextureRenderTargetFormat::RTF_RGBA32f},
+    {"normal_visualize",       ETextureRenderTargetFormat::RTF_RGBA32f},
+    {"segmentation",           ETextureRenderTargetFormat::RTF_RGBA8},
+    {"segmentation_visualize", ETextureRenderTargetFormat::RTF_RGBA8}};
 
 const std::map<std::string, std::string> RENDER_PASS_MATERIAL = {
-    {"depth",        "/SimulationController/Materials/PPM_Depth.PPM_Depth"},
-    {"normal",       "/SimulationController/Materials/PPM_Normal.PPM_Normal"},
-    {"segmentation", "/SimulationController/Materials/PPM_Segmentation.PPM_Segmentation"}};
+    {"depth",                  "/SimulationController/Materials/PPM_Depth.PPM_Depth"},
+    {"depth_visualize",        "/SimulationController/Materials/PPM_Depth_Visualize.PPM_Depth_Visualize"},
+    {"normal",                 "/SimulationController/Materials/PPM_Normal.PPM_Normal"},
+    {"normal_visualize",       "/SimulationController/Materials/PPM_Normal_Visualize.PPM_Normal_Visualize"},
+    {"segmentation",           "/SimulationController/Materials/PPM_Segmentation.PPM_Segmentation"},
+    {"segmentation_visualize", "/SimulationController/Materials/PPM_Segmentation_Visualize.PPM_Segmentation_Visualize"} };
 
 const std::map<std::string, float> RENDER_PASS_LOW = {
-    {"depth",        0.0f},
-    {"final_color",  0.0f},
-    {"normal",       std::numeric_limits<float>::lowest()}, // Unreal can return normals that are not unit length
-    {"segmentation", 0.0f}};
+    {"depth",                  0.0f},
+    {"depth_visualize",        0.0f},
+    {"final_color",            0.0f},
+    {"normal",                 std::numeric_limits<float>::lowest()}, // Unreal can return normals that are not unit length
+    {"normal_visualize",       std::numeric_limits<float>::lowest()}, // Unreal can return normals that are not unit length
+    {"segmentation",           0.0f},
+    {"segmentation_visualize", 0.0f}};
 
 const std::map<std::string, float> RENDER_PASS_HIGH = {
-    {"depth",        std::numeric_limits<float>::max()},
-    {"final_color",  255.0f},
-    {"normal",       std::numeric_limits<float>::max()}, // Unreal can return normals that are not unit length
-    {"segmentation", 255.0f}};
+    {"depth",                  std::numeric_limits<float>::max()},
+    {"depth_visualize",        std::numeric_limits<float>::max()},
+    {"final_color",            255.0f},
+    {"normal",                 std::numeric_limits<float>::max()}, // Unreal can return normals that are not unit length
+    {"normal_visualize",       std::numeric_limits<float>::max()}, // Unreal can return normals that are not unit length
+    {"segmentation",           255.0f},
+    {"segmentation_visualize", 255.0f}};
 
 const std::map<std::string, DataType> RENDER_PASS_CHANNEL_DATATYPE = {
-    {"depth",        DataType::Float32},
-    {"final_color",  DataType::UInteger8},
-    {"normal",       DataType::Float32},
-    {"segmentation", DataType::UInteger8}};
+    {"depth",                  DataType::Float32},
+    {"depth_visualize",        DataType::Float32},
+    {"final_color",            DataType::UInteger8},
+    {"normal",                 DataType::Float32},
+    {"normal_visualize",       DataType::Float32},
+    {"segmentation",           DataType::UInteger8},
+    {"segmentation_visualize", DataType::UInteger8}};
 
 CameraSensor::CameraSensor(
     UCameraComponent* camera_component, const std::vector<std::string>& render_pass_names, unsigned int width, unsigned int height, float fov)
@@ -211,13 +232,14 @@ std::map<std::string, std::vector<uint8_t>> CameraSensor::getObservation(const s
     if (Std::contains(observation_components, "camera")) {
         for (auto& render_pass_desc : render_pass_descs_) {
 
+            std::string render_pass_name = render_pass_desc.first;
             void* dest_ptr = nullptr;
             if (Config::get<bool>("SIMULATION_CONTROLLER.CAMERA_SENSOR.USE_SHARED_MEMORY")) {
                 dest_ptr = render_pass_desc.second.shared_memory_mapped_region_.get_address();
             } else {
-                observation["camera." + render_pass_desc.first] = {};
-                observation.at("camera." + render_pass_desc.first).resize(render_pass_desc.second.num_bytes_);
-                dest_ptr = observation.at("camera." + render_pass_desc.first).data();
+                observation["camera." + render_pass_name] = {};
+                observation.at("camera." + render_pass_name).resize(render_pass_desc.second.num_bytes_);
+                dest_ptr = observation.at("camera." + render_pass_name).data();
             }
             SP_ASSERT(dest_ptr);
 
@@ -226,13 +248,13 @@ std::map<std::string, std::vector<uint8_t>> CameraSensor::getObservation(const s
                     render_pass_desc.second.scene_capture_component_->TextureTarget->GameThread_GetRenderTargetResource();
                 SP_ASSERT(texture_render_target_resource);
 
-                if (render_pass_desc.first == "final_color" || render_pass_desc.first == "segmentation") {
+                if (RENDER_PASS_NUM_CHANNELS.at(render_pass_name) == 4 && RENDER_PASS_NUM_BYTES_PER_CHANNEL.at(render_pass_name) == 1) {
                     // ReadPixelsPtr assumes 4 channels per pixel, 1 byte per channel, so it can be used to read
                     // the following ETextureRenderTargetFormat formats:
-                    //     final_color:  RTF_RGBA8
-                    //     segmentation: RTF_RGBA8_SRGB
+                    //     final_color:  RTF_RGBA8_SRGB
+                    //     segmentation: RTF_RGBA8
                     texture_render_target_resource->ReadPixelsPtr(static_cast<FColor*>(dest_ptr));
-                } else if (render_pass_desc.first == "depth" || render_pass_desc.first == "normal") {
+                } else if (RENDER_PASS_NUM_CHANNELS.at(render_pass_name) == 4 && RENDER_PASS_NUM_BYTES_PER_CHANNEL.at(render_pass_name) == 4) {
                     // ReadLinearColorPixelsPtr assumes 4 channels per pixel, 4 bytes per channel, so it can be used
                     // to read the following ETextureRenderTargetFormat formats:
                     //     depth:  RTF_RGBA32f
