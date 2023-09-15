@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     if not args.benchmark:
         split_dir = os.path.realpath(os.path.join(args.dataset_dir, args.split + "_data"))
-        shutil.rmtree(split_dir, ignore_errors=True)
+        # shutil.rmtree(split_dir, ignore_errors=True)
 
     # load driving policy
     policy = OpenBotPathFollowingPolicy(config)
