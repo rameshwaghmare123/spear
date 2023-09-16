@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--num_iterations_per_episode", type=int, default=500)
-    parser.add_argument("--episodes_file", default=os.path.realpath(os.path.join(os.path.dirname(__file__), "train_episodes.csv")))
+    parser.add_argument("--episodes_file", default=os.path.realpath(os.path.join(os.path.dirname(__file__), "episodes", "train_episodes.csv")))
     parser.add_argument("--dataset_dir", default=os.path.realpath(os.path.join(os.path.dirname(__file__), "dataset")))
     parser.add_argument("--split", default="train")
     parser.add_argument("--debug", action="store_true")
@@ -131,7 +131,11 @@ if __name__ == "__main__":
                 os.makedirs(images_dir, exist_ok=True)
                 os.makedirs(sensor_data_dir, exist_ok=True)
                 os.makedirs(plots_dir, exist_ok=True)
-    
+
+                for render_pass in config.SIMULATION_CONTROLLER.VEHICLE_AGENT.CAMERA.RENDER_PASSES:
+                    render_pass_dir = os.path.realpath(os.path.join(images_dir, render_pass))
+                    os.makedirs(render_pass_dir, exist_ok=True)
+
                 episode_timestamp_data = np.empty([args.num_iterations_per_episode], dtype=np.int64)
                 episode_frame_id_data  = np.empty([args.num_iterations_per_episode], dtype=np.int32)
     
@@ -177,14 +181,38 @@ if __name__ == "__main__":
                     show_obs(obs)
     
                 if not args.benchmark:
-                    obs_final_color = obs["camera.final_color"]
-                    assert len(obs_final_color.shape) == 3
-                    assert obs_final_color.shape[2] == 4
-                    obs_final_color = obs_final_color[:,:,[2,1,0,3]].copy() # note that spear.Env returns BGRA by default
-    
-                    # save the collected rgb observations
-                    plt.imsave(os.path.realpath(os.path.join(images_dir, "%d.jpeg"%i)), obs_final_color)
-    
+                    for render_pass in config.SIMULATION_CONTROLLER.VEHICLE_AGENT.CAMERA.RENDER_PASSES:                        
+                        render_pass_dir = os.path.realpath(os.path.join(images_dir, render_pass))
+                        assert os.path.exists(render_pass_dir)
+
+                        obs_render_pass = obs["camera." + render_pass]
+                        assert len(obs_render_pass.shape) == 3
+                        assert obs_render_pass.shape[2] == 4
+
+                        if render_pass == "final_color":
+                            obs_render_pass_vis = obs_render_pass[:,:,[2,1,0,3]].copy() # note that spear.Env returns BGRA by default
+
+                        elif render_pass == "depth":
+                            max_depth_meters = 20.0
+                            obs_render_pass_vis = obs_render_pass[:,:,[0,1,2]].copy() # depth is returned as RGBA
+                            obs_render_pass_vis = obs_render_pass_vis[:,:,0] / 100.0 # centimeters to meters
+                            obs_render_pass_vis = np.clip(obs_render_pass_vis, 0.0, max_depth_meters)
+
+                        elif render_pass == "depth_visualize":
+                            obs_render_pass_vis = obs_render_pass[:,:,[0,1,2]].copy() # depth is returned as RGBA
+
+                        elif render_pass == "normal_visualize":
+                            obs_render_pass_vis = obs_render_pass[:,:,[0,1,2]].copy() # normal is returned as RGBA
+
+                        elif render_pass == "segmentation_visualize":
+                            obs_render_pass_vis = obs_render_pass[:,:,[2,1,0]].copy() # segmentation is returned as BGRA
+
+                        else:
+                            assert False
+
+                        # save the collected image observations
+                        plt.imsave(os.path.realpath(os.path.join(render_pass_dir, "%04d.png"%i)), obs_render_pass_vis)
+
                     # During an episode, there is no guarantee that the agent reaches the predefined goal although its behavior is perfectly valid for training
                     # purposes. In practice, it may for instance occur that the agent is not given enough time steps or control authority to move along the whole
                     # path. In this case, rather than considering the whole episode as a fail, one can consider the last position reached by the agent as
@@ -222,8 +250,8 @@ if __name__ == "__main__":
                 spear.log("    Average frame time: %0.4f ms (%0.4f fps)" %
                     ((elapsed_time_seconds / num_iterations_executed)*1000, num_iterations_executed / elapsed_time_seconds))
     
-            elif not episode_successful:
-                shutil.rmtree(episode_dir, ignore_errors=True)
+            # elif not episode_successful:
+                # shutil.rmtree(episode_dir, ignore_errors=True)
     
             else:
                 spear.log(f"    Writing log files...")

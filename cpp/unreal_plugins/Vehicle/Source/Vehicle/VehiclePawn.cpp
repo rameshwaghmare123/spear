@@ -40,6 +40,8 @@ AVehiclePawn::AVehiclePawn(const FObjectInitializer& object_initializer) :
 
     GetMesh()->SetSkeletalMesh(skeletal_mesh.Object);
     GetMesh()->SetAnimClass(anim_instance.Class);
+    GetMesh()->SetRenderCustomDepth(true);
+    GetMesh()->SetCustomDepthStencilValue(250);
 
     // The AWheeledVehiclePawn constructor sets this parameter to false, but we want it set to true.
     // We choose to exactly undo the behavior of the AWheeledVehiclePawn constructor and set this bool

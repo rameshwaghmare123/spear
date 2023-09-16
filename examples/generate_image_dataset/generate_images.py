@@ -117,13 +117,11 @@ if __name__ == "__main__":
                 obs_render_pass = obs["camera." + render_pass]
                 assert len(obs_render_pass.shape) == 3
                 assert obs_render_pass.shape[2] == 4
-
                 if render_pass == "depth":
-                    obs_render_pass_vis = obs_render_pass[:,:,[0,1,2]].copy() # depth is returned as RGBA
-
                     # discard very large depth values
                     max_depth_meters = 20.0
-                    obs_render_pass_vis = obs_render_pass_vis[:,:,0]
+                    obs_render_pass_vis = obs_render_pass[:,:,[0,1,2]].copy() # depth is returned as RGBA
+                    obs_render_pass_vis = obs_render_pass_vis[:,:,0] / 100.0 # centimeters to meters
                     obs_render_pass_vis = np.clip(obs_render_pass_vis, 0.0, max_depth_meters)
 
                 elif render_pass == "final_color":

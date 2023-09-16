@@ -253,12 +253,15 @@ std::map<std::string, std::vector<uint8_t>> CameraSensor::getObservation(const s
                     // the following ETextureRenderTargetFormat formats:
                     //     final_color:  RTF_RGBA8_SRGB
                     //     segmentation: RTF_RGBA8
+                    //     segmentation_visualize: RTF_RGBA8
                     texture_render_target_resource->ReadPixelsPtr(static_cast<FColor*>(dest_ptr));
                 } else if (RENDER_PASS_NUM_CHANNELS.at(render_pass_name) == 4 && RENDER_PASS_NUM_BYTES_PER_CHANNEL.at(render_pass_name) == 4) {
                     // ReadLinearColorPixelsPtr assumes 4 channels per pixel, 4 bytes per channel, so it can be used
                     // to read the following ETextureRenderTargetFormat formats:
                     //     depth:  RTF_RGBA32f
                     //     normal: RTF_RGBA32f
+                    //     depth_visualize: RTF_RGBA32f
+                    //     normal_visualize: RTF_RGBA32f
                     texture_render_target_resource->ReadLinearColorPixelsPtr(static_cast<FLinearColor*>(dest_ptr));
                 } else {
                     SP_ASSERT(false);
