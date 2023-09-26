@@ -31,7 +31,7 @@ enum class EJointType
     Planar     UMETA(DisplayName = "Planar")
 };
 
-// enum values must match UrdfJointType in UrdfParser.h
+// enum values must match UrdfJointControlType in UrdfParser.h
 UENUM()
 enum class EJointControlType
 {

@@ -124,9 +124,9 @@ void UUrdfJointComponent::initialize(const UrdfJointDesc* joint_desc, UUrdfLinkC
     SetConstrainedComponents(child_static_mesh_component_, NAME_None, parent_static_mesh_component_, NAME_None);
 
     // Optionally enable the "parent dominates" flag to reduce jittering.
-    if (joint_desc->parent_dominates_) {
-        ConstraintInstance.EnableParentDominates();
-    }
+    //if (joint_desc->parent_dominates_) {
+    //    ConstraintInstance.EnableParentDominates();
+    //}
 
     // Set limits
     ConstraintInstance.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Locked, 0.0f);
