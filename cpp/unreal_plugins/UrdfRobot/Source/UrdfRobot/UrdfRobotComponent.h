@@ -31,6 +31,7 @@ public:
 
     // UActorComponent interface
     void BeginPlay() override;
+    void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
     UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "Enable Keyboard Control")
     bool EnableKeyboardControl = false;

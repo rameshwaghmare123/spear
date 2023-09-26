@@ -22,15 +22,30 @@
 
 // useful for debugging pendulum.urdf
 const std::map<std::string, std::map<std::string, std::vector<double>>> DEFAULT_PLAYER_INPUT_ACTIONS = {
-    {"One",   {{"joint_0.add_torque_in_radians",          { 1000000.0, 0.0, 0.0}}}},
-    {"Two",   {{"joint_0.add_torque_in_radians",          {-1000000.0, 0.0, 0.0}}}},
-    {"Three", {{"joint_1.add_to_angular_velocity_target", { 0.1,       0.0, 0.0}}}},
-    {"Four",  {{"joint_1.add_to_angular_velocity_target", {-0.1,       0.0, 0.0}}}}
+    {"One",   {{"joint_0.add_torque_in_radians",                { 1000000.0, 0.0, 0.0}}}},
+    {"Two",   {{"joint_0.add_torque_in_radians",                {-1000000.0, 0.0, 0.0}}}},
+    {"Three", {{"joint_1.add_to_angular_velocity_target",       { 0.1,       0.0, 0.0}}}},
+    {"Four",  {{"joint_1.add_to_angular_velocity_target",       {-0.1,       0.0, 0.0}}}},
+    {"i",     {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
+              { "wheel_joint_r.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}}}},
+    {"j",     {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
+              { "wheel_joint_r.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}}}},
+    {"k",     {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
+              { "wheel_joint_r.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}}}},
+    {"l",     {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
+              { "wheel_joint_r.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}}}},
+    {"t",     {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"y",     {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
 };
 
 UUrdfRobotComponent::UUrdfRobotComponent()
 {
     SP_LOG_CURRENT_FUNCTION();
+
+    // The UrdfRobotComponent (and hence the UrdfBotPawn) does not move along with the movement of components attached to it.
+    // We update the pose of this component PostPhysics and PreRender to follow the base link's pose.
+    PrimaryComponentTick.bCanEverTick = true;
+    PrimaryComponentTick.TickGroup = ETickingGroup::TG_PostPhysics;
 
     // UPlayerInputComponent
     player_input_component_ = CreateDefaultSubobject<UPlayerInputComponent>(Unreal::toFName("player_input_component"));
@@ -92,6 +107,18 @@ void UUrdfRobotComponent::BeginPlay()
             applyAction(player_input_actions.at(player_input_action_desc.key_), assert_if_joint_not_found, assert_if_action_is_inconsistent_with_joint);
         }
     };
+}
+
+void UUrdfRobotComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+    UUrdfLinkComponent* link_component = link_components_.at("base_link");
+    SP_ASSERT(link_component);
+
+    bool sweep = false;
+    FHitResult* hit_result = nullptr;
+    this->SetRelativeLocationAndRotation(link_component->GetRelativeLocation(), link_component->GetRelativeRotation(), sweep, hit_result, ETeleportType::None);
+
+    USceneComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
 //std::map<std::string, ArrayDesc> UUrdfRobotComponent::getActionSpace(const std::vector<std::string>& action_components) const
