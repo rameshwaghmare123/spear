@@ -48,4 +48,6 @@ public:
     UUrdfRobotComponent* UrdfRobotComponent = nullptr;
     UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "Camera Component")
     UCameraComponent* CameraComponent = nullptr;
+
+    void SetupPlayerInputComponent(UInputComponent* input_component) override;
 };

@@ -23,10 +23,16 @@
 #include "CoreUtils/PlayerInputComponent.h"
 #include "CoreUtils/Std.h"
 #include "CoreUtils/Unreal.h"
+// -----------------------------------------------------
+#include "UrdfRobot/UrdfLinkComponent.h"
+// -----------------------------------------------------
+
 #include "UrdfRobot/UrdfParser.h"
 #include "UrdfRobot/UrdfRobotComponent.h"
 
+
 const auto DEFAULT_URDF_FILE = std::filesystem::path() / ".." / ".." / ".." / "python" / "spear" / "urdf" / "pendulum.urdf";
+
 
 AUrdfRobotPawn::AUrdfRobotPawn()
 {
@@ -69,6 +75,16 @@ void AUrdfRobotPawn::Initialize()
 
     SetRootComponent(UrdfRobotComponent);
 
+// -----------------------------------------------------
+    // Assign custom stencil depth value to just the link components for demo purpose
+    for (auto& link_component : UrdfRobotComponent->LinkComponents) {
+        for (auto& sm_component : link_component->StaticMeshComponents) {
+            sm_component->SetRenderCustomDepth(true);
+            sm_component->SetCustomDepthStencilValue(250);
+        }
+    }
+// -----------------------------------------------------
+
     // UCameraComponent
     FVector camera_location;
     FRotator camera_rotation;
@@ -86,10 +102,13 @@ void AUrdfRobotPawn::Initialize()
         field_of_view = Config::get<float>("URDF_ROBOT.URDF_ROBOT_PAWN.CAMERA_COMPONENT.FOV");
         aspect_ratio = Config::get<float>("URDF_ROBOT.URDF_ROBOT_PAWN.CAMERA_COMPONENT.ASPECT_RATIO");
     } else {
-        camera_location = FVector::ZeroVector;
-        camera_rotation = FRotator::ZeroRotator;
+// -----------------------------------------------------
+        camera_location = FVector(-70, 70, 140);// a bit further thirdperson view // FVector(-45, 0, 142); //a close up third-personview
+        camera_rotation = FRotator(-20, 330, 0);// a bit further thirdperson view // FRotator(-30, 0, 0);
+        //camera_location = FVector::ZeroVector;
+        //camera_rotation = FRotator::ZeroRotator;
+// -----------------------------------------------------
         field_of_view = 90.0;
-        aspect_ratio = 1.0;
     }
 
     CameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("camera_component"));
@@ -98,6 +117,32 @@ void AUrdfRobotPawn::Initialize()
     CameraComponent->SetupAttachment(UrdfRobotComponent);
     CameraComponent->bUsePawnControlRotation = false;
     CameraComponent->FieldOfView = field_of_view;
-    CameraComponent->AspectRatio = aspect_ratio;
+    //CameraComponent->AspectRatio = aspect_ratio;
     CameraComponent->RegisterComponent();
+}
+
+void AUrdfRobotPawn::SetupPlayerInputComponent(UInputComponent* input_component)
+{
+    APawn::SetupPlayerInputComponent(input_component);
+
+    SP_ASSERT(input_component);
+
+    UPlayerInput* player_input = GetWorld()->GetFirstPlayerController()->PlayerInput;
+    SP_ASSERT(player_input);
+    player_input->AddAxisMapping(FInputAxisKeyMapping(Unreal::toFName("Exit"), FKey(Unreal::toFName("Escape")), 1.0f));
+    input_component->BindAxis(Unreal::toFName("Exit"));
+
+    // Forward input_component to all of our UPlayerInputComponents so they can add their own input bindings.
+
+    // TODO (MR): move this functionality into a findComponents(...) function in Unreal.h
+    std::vector<AActor*> actors = Unreal::findActors(GetWorld());
+    for (auto actor : actors) {
+        TArray<UActorComponent*> components;
+        actor->GetComponents(UPlayerInputComponent::StaticClass(), components);
+        for (auto component : components) {
+            auto player_input_component = dynamic_cast<UPlayerInputComponent*>(component);
+            SP_ASSERT(player_input_component);
+            player_input_component->input_component_ = input_component;
+        }
+    }
 }
