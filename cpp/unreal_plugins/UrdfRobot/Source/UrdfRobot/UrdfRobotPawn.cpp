@@ -145,4 +145,33 @@ void AUrdfRobotPawn::SetupPlayerInputComponent(UInputComponent* input_component)
             player_input_component->input_component_ = input_component;
         }
     }
+
+    // bind a UFUNCTION to a keypress
+    player_input->AddActionMapping(FInputActionKeyMapping(Unreal::toFName("ChangeCameraComponent"), FKey("Gamepad_LeftThumbstick")));
+    input_component->BindAction("ChangeCameraComponent", IE_Pressed, this, &AUrdfRobotPawn::ChangeCameraComponent);
+}
+
+void AUrdfRobotPawn::ChangeCameraComponent()
+{
+    SP_LOG_CURRENT_FUNCTION();
+
+    static int camera_index = 0;
+
+    TArray<USceneComponent*> scene_components = UrdfRobotComponent->GetAttachChildren();
+
+    for (int i = 0; i < scene_components.Num(); i++) {
+        UCameraComponent* camera_component = dynamic_cast<UCameraComponent*>(scene_components[i]);
+        if (i == camera_index) {
+            if (camera_component) {
+                camera_component->Activate(true);
+            }
+        } else {
+            if (camera_component) {
+                camera_component->Deactivate();
+            }
+        }
+    }
+
+    camera_index++;
+    camera_index %= scene_components.Num();
 }

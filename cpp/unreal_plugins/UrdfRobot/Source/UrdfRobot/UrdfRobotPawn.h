@@ -50,4 +50,7 @@ public:
     UCameraComponent* CameraComponent = nullptr;
 
     void SetupPlayerInputComponent(UInputComponent* input_component) override;
+
+    UFUNCTION(BlueprintCallable)
+    void ChangeCameraComponent();
 };

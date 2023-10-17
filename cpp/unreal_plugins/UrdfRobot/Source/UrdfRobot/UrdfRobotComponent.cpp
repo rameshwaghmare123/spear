@@ -6,7 +6,7 @@
 
 #include <map>
 #include <string>
-//#include <vector>
+#include <vector>
 
 #include <Components/SceneComponent.h>
 
@@ -22,20 +22,38 @@
 
 // useful for debugging pendulum.urdf
 const std::map<std::string, std::map<std::string, std::vector<double>>> DEFAULT_PLAYER_INPUT_ACTIONS = {
-    {"One",   {{"joint_0.add_torque_in_radians",                { 1000000.0, 0.0, 0.0}}}},
-    {"Two",   {{"joint_0.add_torque_in_radians",                {-1000000.0, 0.0, 0.0}}}},
-    {"Three", {{"joint_1.add_to_angular_velocity_target",       { 0.1,       0.0, 0.0}}}},
-    {"Four",  {{"joint_1.add_to_angular_velocity_target",       {-0.1,       0.0, 0.0}}}},
-    {"i",     {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
+    {"Up",     {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
               { "wheel_joint_r.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}}}},
-    {"j",     {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
+    {"Left",     {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
               { "wheel_joint_r.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}}}},
-    {"k",     {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
+    {"Down",     {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
               { "wheel_joint_r.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}}}},
-    {"l",     {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
+    {"Right",     {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
               { "wheel_joint_r.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}}}},
-    {"t",     {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
-    {"y",     {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"f",     {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"v",     {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"g",     {{"arm_joint_1.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"b",     {{"arm_joint_1.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"h",     {{"arm_joint_2.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"n",     {{"arm_joint_2.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"j",     {{"arm_joint_5.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"m",     {{"arm_joint_5.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"Gamepad_DPad_Up",           {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
+                                  { "wheel_joint_r.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}}}},
+    {"Gamepad_DPad_Left",         {{"wheel_joint_l.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}},
+                                  { "wheel_joint_r.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}}}},
+    {"Gamepad_DPad_Down",         {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
+                                  { "wheel_joint_r.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}}}},
+    {"Gamepad_DPad_Right",        {{"wheel_joint_l.add_to_angular_velocity_target", {-0.1, 0.0, 0.0}},
+                                  { "wheel_joint_r.add_to_angular_velocity_target", { 0.1, 0.0, 0.0}}}},
+    {"Gamepad_FaceButton_Left",   {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"Gamepad_FaceButton_Right",  {{"arm_joint_0.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"Gamepad_FaceButton_Top",    {{"arm_joint_1.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"Gamepad_FaceButton_Bottom", {{"arm_joint_1.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"Gamepad_RightTrigger",      {{"arm_joint_2.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"Gamepad_RightShoulder",     {{"arm_joint_2.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
+    {"Gamepad_LeftTrigger",       {{"arm_joint_5.add_to_angular_orientation_target",{ 0.0, 0.0, 2.0}}}},
+    {"Gamepad_LeftShoulder",      {{"arm_joint_5.add_to_angular_orientation_target",{ 0.0, 0.0,-2.0}}}},
 };
 
 UUrdfRobotComponent::UUrdfRobotComponent()
@@ -111,14 +129,14 @@ void UUrdfRobotComponent::BeginPlay()
 
 void UUrdfRobotComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-    UUrdfLinkComponent* link_component = link_components_.at("base_link");
-    SP_ASSERT(link_component);
+    USceneComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    auto root_link_component = LinkComponents[0];
+    SP_ASSERT(root_link_component);
 
     bool sweep = false;
     FHitResult* hit_result = nullptr;
-    this->SetRelativeLocationAndRotation(link_component->GetRelativeLocation(), link_component->GetRelativeRotation(), sweep, hit_result, ETeleportType::None);
-
-    USceneComponent::TickComponent(DeltaTime, TickType, ThisTickFunction);
+    SetWorldLocationAndRotation(root_link_component->GetComponentLocation(), root_link_component->GetComponentRotation(), sweep, hit_result, ETeleportType::None);
 }
 
 //std::map<std::string, ArrayDesc> UUrdfRobotComponent::getActionSpace(const std::vector<std::string>& action_components) const
