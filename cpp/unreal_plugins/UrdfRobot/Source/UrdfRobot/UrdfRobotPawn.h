@@ -46,8 +46,14 @@ public:
     FString UrdfFile;
     UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "URDF Robot Component")
     UUrdfRobotComponent* UrdfRobotComponent = nullptr;
-    UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "Camera Component")
-    UCameraComponent* CameraComponent = nullptr;
+    UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "RGB Camera Component")
+    UCameraComponent* RgbCameraComponent = nullptr;
+    UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "Depth Camera Component")
+    UCameraComponent* DepthCameraComponent = nullptr;
+    UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "Normal Camera Component")
+    UCameraComponent* NormalCameraComponent = nullptr;
+    UPROPERTY(EditAnywhere, Category = "SPEAR", DisplayName = "Segmentation Camera Component")
+    UCameraComponent* SegmentationCameraComponent = nullptr;
 
     void SetupPlayerInputComponent(UInputComponent* input_component) override;
 

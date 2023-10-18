@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+#include <CoreUObject/Public/UObject/ConstructorHelpers.h>
+#include <Materials/MaterialInstanceConstant.h>
+
 #include <Camera/CameraComponent.h>
 #include <Components/InputComponent.h>
 #include <CoreMinimal.h>
@@ -47,7 +50,10 @@ AUrdfRobotPawn::~AUrdfRobotPawn()
 
     UrdfFile = Unreal::toFString("");
     UrdfRobotComponent = nullptr;
-    CameraComponent = nullptr;
+    RgbCameraComponent = nullptr;
+    DepthCameraComponent = nullptr;
+    NormalCameraComponent = nullptr;
+    SegmentationCameraComponent = nullptr;
 }
 
 void AUrdfRobotPawn::Initialize()
@@ -111,14 +117,52 @@ void AUrdfRobotPawn::Initialize()
         field_of_view = 90.0;
     }
 
-    CameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("camera_component"));
-    SP_ASSERT(CameraComponent);
-    CameraComponent->SetRelativeLocationAndRotation(camera_location, camera_rotation);
-    CameraComponent->SetupAttachment(UrdfRobotComponent);
-    CameraComponent->bUsePawnControlRotation = false;
-    CameraComponent->FieldOfView = field_of_view;
-    //CameraComponent->AspectRatio = aspect_ratio;
-    CameraComponent->RegisterComponent();
+    RgbCameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("rgb_camera_component"));
+    SP_ASSERT(RgbCameraComponent);
+    RgbCameraComponent->SetRelativeLocationAndRotation(camera_location, camera_rotation);
+    RgbCameraComponent->SetupAttachment(UrdfRobotComponent);
+    RgbCameraComponent->bUsePawnControlRotation = false;
+    RgbCameraComponent->FieldOfView = field_of_view;
+    //RgbCameraComponent->AspectRatio = aspect_ratio;
+    RgbCameraComponent->RegisterComponent();
+
+
+    DepthCameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("depth_camera_component"));
+    SP_ASSERT(DepthCameraComponent);
+    DepthCameraComponent->SetRelativeLocationAndRotation(camera_location, camera_rotation);
+    DepthCameraComponent->SetupAttachment(UrdfRobotComponent);
+    DepthCameraComponent->bUsePawnControlRotation = false;
+    DepthCameraComponent->FieldOfView = field_of_view;
+    //DepthCameraComponent->AspectRatio = aspect_ratio;
+    DepthCameraComponent->RegisterComponent();
+    UMaterialInterface* DepthMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Engine.Material'/SimulationController/Materials/PPM_Depth_Visualize.PPM_Depth_Visualize'"));
+    SP_ASSERT(DepthMaterial);
+    DepthCameraComponent->AddOrUpdateBlendable(DepthMaterial, 1.0f);
+
+    NormalCameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("normal_camera_component"));
+    SP_ASSERT(NormalCameraComponent);
+    NormalCameraComponent->SetRelativeLocationAndRotation(camera_location, camera_rotation);
+    NormalCameraComponent->SetupAttachment(UrdfRobotComponent);
+    NormalCameraComponent->bUsePawnControlRotation = false;
+    NormalCameraComponent->FieldOfView = field_of_view;
+    //NormalCameraComponent->AspectRatio = aspect_ratio;
+    NormalCameraComponent->RegisterComponent();
+    UMaterialInterface* NormalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Engine.Material'/SimulationController/Materials/PPM_Normal_Visualize.PPM_Normal_Visualize'"));
+    SP_ASSERT(NormalMaterial);
+    NormalCameraComponent->AddOrUpdateBlendable(NormalMaterial, 1.0f);
+
+
+    SegmentationCameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("segmentation_camera_component"));
+    SP_ASSERT(SegmentationCameraComponent);
+    SegmentationCameraComponent->SetRelativeLocationAndRotation(camera_location, camera_rotation);
+    SegmentationCameraComponent->SetupAttachment(UrdfRobotComponent);
+    SegmentationCameraComponent->bUsePawnControlRotation = false;
+    SegmentationCameraComponent->FieldOfView = field_of_view;
+    //SegmentationCameraComponent->AspectRatio = aspect_ratio;
+    SegmentationCameraComponent->RegisterComponent();
+    UMaterialInterface* SegmentationMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Engine.Material'/SimulationController/Materials/PPM_Segmentation_Visualize.PPM_Segmentation_Visualize'"));
+    SP_ASSERT(SegmentationMaterial);
+    SegmentationCameraComponent->AddOrUpdateBlendable(SegmentationMaterial, 1.0f);
 }
 
 void AUrdfRobotPawn::SetupPlayerInputComponent(UInputComponent* input_component)
