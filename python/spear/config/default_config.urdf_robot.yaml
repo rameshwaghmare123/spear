@@ -15,7 +15,8 @@ URDF_ROBOT:
       ROTATION_PITCH: 0.0
       FOV: 90.0              # Camera field of view in [deg], typically overwritten by UrdfRobotAgent
       ASPECT_RATIO: 1.0      # Camera aspect ratio, width/height, typically overwritten by UrdfRobotAgent
-
+  
+  URDF_ROBOT_COMPONENT:
     PLAYER_INPUT_ACTIONS: {} # Useful for forwarding keyboard input
 
   URDF_LINK_COMPONENT:
