@@ -58,7 +58,7 @@
         <child link="wheel_link_l"/>
         <axis xyz="0 1 0"/>
         <limit effort="8.85" velocity="17.4"/>
-        <dynamics damping="100"/>
+        <dynamics damping="500"/>
         <spear>
             <dynamics control_type="velocity"/>
         </spear>
@@ -92,7 +92,7 @@
         <child link="wheel_link_r"/>
         <axis xyz="0 1 0"/>
         <limit effort="8.85" velocity="17.4"/>
-        <dynamics damping="100"/>
+        <dynamics damping="500"/>
         <spear>
             <dynamics control_type="velocity"/>
         </spear>
@@ -368,7 +368,7 @@
         <limit effort="0" lower="-1.6056" upper="1.6056" velocity="1.256"/>
         <dynamics damping="0.4"/>
         <spear>
-            <dynamics control_type="position_and_velocity" spring="0.4" parent_dominates="true"/>
+            <dynamics control_type="position_and_velocity" spring="2.0" parent_dominates="true"/>
         </spear>
     </joint>
 
@@ -402,9 +402,9 @@
         <axis xyz="0 1 0"/>
         <!-- <limit effort="0" lower="-1.221" upper="1.518" velocity="1.454"/> TODO (MR): support asymmetric limits -->
         <limit effort="0" lower="-1.518" upper="1.518" velocity="1.454"/>
-        <dynamics damping="0.4"/>
+        <dynamics damping="0.9"/>
         <spear>
-            <dynamics control_type="position_and_velocity" spring="0.4" parent_dominates="true"/>
+            <dynamics control_type="position_and_velocity" spring="5.0" parent_dominates="true"/>
         </spear>
     </joint>
 
@@ -438,7 +438,7 @@
         <limit effort="0" velocity="1.571"/>
         <dynamics damping="0.4"/>
         <spear>
-            <dynamics control_type="position_and_velocity" spring="0.4" parent_dominates="true"/>
+            <dynamics control_type="position_and_velocity" spring="0.9" parent_dominates="true"/>
         </spear>
     </joint>
 

@@ -138,6 +138,7 @@ void AUrdfRobotPawn::Initialize()
     UMaterialInterface* DepthMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Engine.Material'/SimulationController/Materials/PPM_Depth_Visualize.PPM_Depth_Visualize'"));
     SP_ASSERT(DepthMaterial);
     DepthCameraComponent->AddOrUpdateBlendable(DepthMaterial, 1.0f);
+    DepthCameraComponent->bAutoActivate = false;
 
     NormalCameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("normal_camera_component"));
     SP_ASSERT(NormalCameraComponent);
@@ -150,7 +151,7 @@ void AUrdfRobotPawn::Initialize()
     UMaterialInterface* NormalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Engine.Material'/SimulationController/Materials/PPM_Normal_Visualize.PPM_Normal_Visualize'"));
     SP_ASSERT(NormalMaterial);
     NormalCameraComponent->AddOrUpdateBlendable(NormalMaterial, 1.0f);
-
+    NormalCameraComponent->bAutoActivate = false;
 
     SegmentationCameraComponent = NewObject<UCameraComponent>(this, Unreal::toFName("segmentation_camera_component"));
     SP_ASSERT(SegmentationCameraComponent);
@@ -163,6 +164,7 @@ void AUrdfRobotPawn::Initialize()
     UMaterialInterface* SegmentationMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("Engine.Material'/SimulationController/Materials/PPM_Segmentation_Visualize.PPM_Segmentation_Visualize'"));
     SP_ASSERT(SegmentationMaterial);
     SegmentationCameraComponent->AddOrUpdateBlendable(SegmentationMaterial, 1.0f);
+    SegmentationCameraComponent->bAutoActivate = false;
 }
 
 void AUrdfRobotPawn::SetupPlayerInputComponent(UInputComponent* input_component)
