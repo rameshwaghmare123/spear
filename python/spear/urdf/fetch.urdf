@@ -404,7 +404,7 @@
         <limit effort="0" lower="-1.518" upper="1.518" velocity="1.454"/>
         <dynamics damping="0.9"/>
         <spear>
-            <dynamics control_type="position_and_velocity" spring="5.0" parent_dominates="true"/>
+            <dynamics control_type="position_and_velocity" spring="2.0" parent_dominates="true"/>
         </spear>
     </joint>
 
