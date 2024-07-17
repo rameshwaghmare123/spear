@@ -6,8 +6,8 @@
 # py C:\github\spear\pipeline\unreal\import_fbx.py --fbx_file "C:\Users\Rachith\Downloads\Shoved_Reaction_With_Spin.fbx" --destination_dir "/Game/ImportedFBXContent" --destination_name CoolKid --actor_label CoolKid
 
 import argparse
-import unreal
 import posixpath
+import unreal
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--fbx_file", required=True)
@@ -114,6 +114,7 @@ def configure_actor_with_imported_asset():
     stablename_mesh_components = actor.get_components_by_class(unreal.StableNameComponent)
     assert len(stablename_mesh_components) == 1
     stablename_mesh_component = stablename_mesh_components[0]
+
 
 if __name__ == "__main__":
 
