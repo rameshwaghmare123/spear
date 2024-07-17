@@ -2,7 +2,6 @@
 # Copyright(c) 2022 Intel. Licensed under the MIT License <http://opensource.org/licenses/MIT>.
 #
 
-import numpy as np
 import os
 import readchar
 import spear
