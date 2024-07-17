@@ -3,8 +3,7 @@
 #
 
 # Example command that can be called in the Unreal Editor
-# py <path/to/your/import_fbx.py> --fbx_file <path/to/your/*.fbx>" --destination_dir "/Game/ImportFbxMesh" --destination_name CoolKid --actor_label CoolKid
-# py D:\unreal_projects\AEGIS_DEMO\Content\Python\import_fbx.py --fbx_file "C:\Users\Rachith\Downloads\Shoved_Reaction_With_Spin.fbx" --destination_dir "/Game/ImportWithComponent" --destination_name CoolKid --actor_label CoolKid
+# py C:\github\spear\pipeline\unreal\import_fbx.py --fbx_file "C:\Users\Rachith\Downloads\Shoved_Reaction_With_Spin.fbx" --destination_dir "/Game/ImportedFBXContent" --destination_name CoolKid --actor_label CoolKid
 
 import argparse
 import unreal
