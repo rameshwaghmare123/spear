@@ -42,6 +42,9 @@ cpp/unreal_projects/SpearSim/.vsconfig
 cpp/unreal_projects/SpearSim/.ignore
 cpp/unreal_projects/SpearSim/.kdev4
 
+examples/articulated_character/tmp
+examples/articulated_character/user_config.yaml
+
 examples/generate_image_dataset/images
 examples/generate_image_dataset/tmp
 examples/generate_image_dataset/user_config.yaml
