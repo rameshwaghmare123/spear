@@ -40,6 +40,8 @@ if __name__ == "__main__":
     spear_instance.engine_service.tick()
     spear_instance.engine_service.end_tick()
 
+    bone_names = ["head", "hand_l", "hand_r"]
+
     quit = False
     while not quit:
 
@@ -52,13 +54,13 @@ if __name__ == "__main__":
 
             spear_instance.engine_service.begin_tick()
 
-            args = {"BoneName": "head", "BoneSpace": "ComponentSpace"}
-            return_values = spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=get_bone_transform_by_name_func, args=args)
+            for bone_name in bone_names:
+                args = {"BoneName": bone_name, "BoneSpace": "ComponentSpace"}
+                return_values = spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=get_bone_transform_by_name_func, args=args)
+                spear.log(return_values)
 
             spear_instance.engine_service.tick()
             spear_instance.engine_service.end_tick()
-
-            spear.log(return_values)
 
         elif key == "1":
 
@@ -66,14 +68,15 @@ if __name__ == "__main__":
 
             spear_instance.engine_service.begin_tick()
 
-            args = {"BoneName": "head", "BoneSpace": "ComponentSpace"}
-            return_values = spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=get_bone_transform_by_name_func, args=args)
+            for bone_name in bone_names:
+                args = {"BoneName": bone_name, "BoneSpace": "ComponentSpace"}
+                return_values = spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=get_bone_transform_by_name_func, args=args)
 
-            args = {"BoneName": "head", "InTransform": return_values["ReturnValue"], "BoneSpace": "ComponentSpace"}
-            args["InTransform"]["scale3D"]["x"] = 0.9*args["InTransform"]["scale3D"]["x"]
-            args["InTransform"]["scale3D"]["y"] = 0.9*args["InTransform"]["scale3D"]["y"]
-            args["InTransform"]["scale3D"]["z"] = 0.9*args["InTransform"]["scale3D"]["z"]
-            spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=set_bone_transform_by_name_func, args=args)
+                args = {"BoneName": bone_name, "InTransform": return_values["ReturnValue"], "BoneSpace": "ComponentSpace"}
+                args["InTransform"]["scale3D"]["x"] = 0.9*args["InTransform"]["scale3D"]["x"]
+                args["InTransform"]["scale3D"]["y"] = 0.9*args["InTransform"]["scale3D"]["y"]
+                args["InTransform"]["scale3D"]["z"] = 0.9*args["InTransform"]["scale3D"]["z"]
+                spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=set_bone_transform_by_name_func, args=args)
 
             spear_instance.engine_service.tick()
             spear_instance.engine_service.end_tick()
@@ -84,14 +87,15 @@ if __name__ == "__main__":
 
             spear_instance.engine_service.begin_tick()
 
-            args = {"BoneName": "head", "BoneSpace": "ComponentSpace"}
-            return_values = spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=get_bone_transform_by_name_func, args=args)
+            for bone_name in bone_names:
+                args = {"BoneName": bone_name, "BoneSpace": "ComponentSpace"}
+                return_values = spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=get_bone_transform_by_name_func, args=args)
 
-            args = {"BoneName": "head", "InTransform": return_values["ReturnValue"], "BoneSpace": "ComponentSpace"}
-            args["InTransform"]["scale3D"]["x"] = 1.1*args["InTransform"]["scale3D"]["x"]
-            args["InTransform"]["scale3D"]["y"] = 1.1*args["InTransform"]["scale3D"]["y"]
-            args["InTransform"]["scale3D"]["z"] = 1.1*args["InTransform"]["scale3D"]["z"]
-            spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=set_bone_transform_by_name_func, args=args)
+                args = {"BoneName": bone_name, "InTransform": return_values["ReturnValue"], "BoneSpace": "ComponentSpace"}
+                args["InTransform"]["scale3D"]["x"] = 1.1*args["InTransform"]["scale3D"]["x"]
+                args["InTransform"]["scale3D"]["y"] = 1.1*args["InTransform"]["scale3D"]["y"]
+                args["InTransform"]["scale3D"]["z"] = 1.1*args["InTransform"]["scale3D"]["z"]
+                spear_instance.unreal_service.call_function(uobject=poseable_mesh_component, ufunction=set_bone_transform_by_name_func, args=args)
 
             spear_instance.engine_service.tick()
             spear_instance.engine_service.end_tick()
