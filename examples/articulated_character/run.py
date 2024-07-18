@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
         if key == "0":
 
-            spear.log("Getting pose data for head bone...")
+            spear.log("Getting pose data for bones: ", bone_names)
 
             spear_instance.engine_service.begin_tick()
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
 
         elif key == "1":
 
-            spear.log("Decreasing scale of head bone...")
+            spear.log("Decreasing scale of bones: ", bone_names)
 
             spear_instance.engine_service.begin_tick()
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
         elif key == "2":
 
-            spear.log("Increasing scale of head bone...")
+            spear.log("Increasing scale of bones: ", bone_names)
 
             spear_instance.engine_service.begin_tick()
 
