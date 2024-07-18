@@ -21,7 +21,7 @@ if __name__ == "__main__":
     spear_instance.engine_service.begin_tick()
 
     # get Unreal actors and functions
-    actor = spear_instance.unreal_service.find_actor_by_name(class_name="AActor", name="Debug/Manny")
+    actor = spear_instance.unreal_service.find_actor_by_name(class_name="AActor", name="Debug/MixamoActor") #"Debug/Manny"
     poseable_mesh_component = spear_instance.unreal_service.get_component_by_type(class_name="UPoseableMeshComponent", actor=actor)
 
     gameplay_statics_static_class = spear_instance.unreal_service.get_static_class(class_name="UGameplayStatics")
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     spear_instance.engine_service.tick()
     spear_instance.engine_service.end_tick()
 
-    bone_names = ["head", "hand_l", "hand_r"]
+    bone_names = ["Head", "LeftHand", "RightHand"] # ["head", "hand_l", "hand_r"]
 
     quit = False
     while not quit:
