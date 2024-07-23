@@ -39,7 +39,7 @@ def import_assets():
     #   Customizable way of importing data
     ######################################
 
-    # Set up the FBX import options
+    # set up the FBX import options
     fbx_import_options = unreal.FbxImportUI()
 
     # General settings
@@ -62,13 +62,13 @@ def import_assets():
     fbx_task.set_editor_property("replace_existing", True)
     fbx_task.set_editor_property("options", fbx_import_options)
 
-    # Execute the import task
+    # execute the import task
     asset_tools.import_asset_tasks([fbx_task])
 
 
 def configure_actor_with_imported_asset():
 
-    # Get the current level
+    # get the current level
     unreal_editor_subsystem = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem)
     actor_editor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
     asset_editor_subsystem = unreal.get_editor_subsystem(unreal.EditorAssetSubsystem)
@@ -81,7 +81,7 @@ def configure_actor_with_imported_asset():
     location = unreal.Vector(-60.0, 230.0, 50.0)
     rotation = unreal.Rotator(0.0, 0.0, 0.0)
 
-    # Spawn the actor
+    # spawn the actor
     actor = actor_editor_subsystem.spawn_actor_from_class(actor_class, location, rotation)
     actor.set_actor_label(args.actor_label)
 
@@ -90,7 +90,7 @@ def configure_actor_with_imported_asset():
     else:
         unreal.log_error(f"Failed to spawn actor {actor.get_name()}")
 
-    # Load the skeletal mesh asset
+    # load the skeletal mesh asset
     skeletal_mesh_path = posixpath.join(args.destination_dir, args.destination_name)
     skeletal_mesh = asset_editor_subsystem.load_asset(skeletal_mesh_path)
 
@@ -113,7 +113,6 @@ def configure_actor_with_imported_asset():
     ))
     stablename_mesh_components = actor.get_components_by_class(unreal.StableNameComponent)
     assert len(stablename_mesh_components) == 1
-    stablename_mesh_component = stablename_mesh_components[0]
 
 
 if __name__ == "__main__":
