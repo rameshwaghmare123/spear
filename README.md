@@ -52,6 +52,6 @@ See our latest [release notes](https://github.com/spear-sim/spear/releases/tag/v
 - The license for the `kujiale` scenes is given [here](LICENSE_KUJIALE.txt).
 - The license for the `StarterContent` assets referenced in the `debug` scenes is given [here](https://www.unrealengine.com/en-US/eula/unreal).
 
-## Acknowledgements
+## Acknowledgments
 
 From 2021 to 2024, SPEAR was developed with generous support from the [Intelligent Systems Lab](https://github.com/isl-org) at [Intel](https://www.intel.com) and [Kujiale](https://www.kujiale.com). Beginning in 2024, SPEAR is being developed by an independent consortium with generous support from Kujiale.
